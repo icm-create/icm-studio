@@ -1038,8 +1038,8 @@ function renderNpPages(){
       <label>Imagem da página (opcional)</label>
       <input type="file" accept="image/*" onchange="handleNpPageImg(${pi}, this)">
       <div class="pos-picker">
-        ${['esquerda','direita','cima (largura toda)','sem imagem'].map((lbl,k)=>{
-          const val=['left','right','full','none'][k];
+        ${['esquerda','direita','cima (largura toda)','baixo (largura toda)','sem imagem'].map((lbl,k)=>{
+          const val=['left','right','full','bottom','none'][k];
           return `<label><input type="radio" name="pos${pi}" value="${val}" ${pg.imagePos===val?'checked':''} onchange="newsPdfData.pages[${pi}].imagePos='${val}';renderNewsPdfPreview()"> ${lbl}</label>`;
         }).join('')}
       </div>
@@ -1071,6 +1071,8 @@ function npPageHtml(pg){
   let mediaBlock;
   if(pg.imagePos==='full' && pg.imageSrc){
     mediaBlock = `<div style="margin-bottom:16px;">${imgTag}</div>${bodyHtml}`;
+  } else if(pg.imagePos==='bottom' && pg.imageSrc){
+    mediaBlock = `${bodyHtml}<div style="margin-top:16px;">${imgTag}</div>`;
   } else if((pg.imagePos==='left'||pg.imagePos==='right') && pg.imageSrc){
     const imgCell = `<td width="230" valign="top" style="padding:${pg.imagePos==='left'?'0 20px 0 0':'0 0 0 20px'}">${imgTag}</td>`;
     const textCell = `<td valign="top">${bodyHtml}</td>`;
@@ -1124,7 +1126,7 @@ async function downloadNewsPdf(){
     const ratio = Math.min(pageW/canvas.width, pageH/canvas.height);
     const w = canvas.width*ratio, h = canvas.height*ratio;
     if(i>0) pdf.addPage();
-    pdf.addImage(imgData, 'PNG', (pageW-w)/2, (pageH-h)/2, w, h);
+    pdf.addImage(imgData, 'PNG', (pageW-w)/2, 0, w, h);
   }
   const fname = 'icm_news_' + (newsPdfData.edition||'edicao').replace(/[^a-zA-Z0-9]+/g,'_').toLowerCase() + '.pdf';
   pdf.save(fname);
