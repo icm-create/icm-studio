@@ -525,6 +525,7 @@ Reunimos os principais alinhamentos, atualizações e novidades que impactam nos
           <span class="draft-status" id="newspdf-draft-status"></span>
         </div>
         <div class="hint">Usa a mesma URL do Apps Script configurada no ICM News (é a mesma planilha, numa aba separada).</div>
+        <div class="hint">⚠️ As imagens das páginas <strong>não</strong> entram no backup (o Google Sheets tem limite de tamanho por célula) — só o texto é salvo. Reanexe as imagens depois de carregar um rascunho.</div>
       </div>
 
       <div class="card">
@@ -1145,7 +1146,15 @@ function downloadNewsPdfHtml(){
 /* --- rascunho (mesma URL do ICM News, chave separada) --- */
 let _newsPdfDraftTimer = null;
 
-function getNewsPdfState(){ return newsPdfData; }
+function getNewsPdfState(){
+  // O rascunho vai para uma célula do Google Sheets, que tem limite de ~50.000
+  // caracteres. Imagens em base64 estouram esse limite fácil, então elas não
+  // entram no backup — só o texto. As imagens precisam ser reanexadas depois
+  // de carregar um rascunho salvo.
+  const clone = JSON.parse(JSON.stringify(newsPdfData));
+  clone.pages.forEach(p => { if(p.imageSrc && p.imageSrc.startsWith('data:')) p.imageSrc = ''; });
+  return clone;
+}
 function applyNewsPdfState(data){
   newsPdfData = data;
   document.getElementById('npEdition').value = newsPdfData.edition || '';
