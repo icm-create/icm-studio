@@ -335,11 +335,15 @@
   .pos-picker input{width:auto; margin:0;}
   .pdf-page{
     width:720px;
+    height:1018px;
     background:#fff;
     margin:0 auto 24px;
     box-shadow:0 2px 14px rgba(0,0,0,.12);
     font-family:Arial,Helvetica,sans-serif;
     overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
   }
   .pdf-cover-sec{
     padding:14px 34px;
@@ -903,7 +907,7 @@ let newsPdfData = {
     { name:'Processos & Áreas', icon:'⚙️', color:'#0e8a8a', items:[ {title:'', desc:''} ] },
   ],
   pages: [
-    { title:'', highlight:'', category:'', icon:'📊', color:'#0e8a8a', body:'', imageSrc:'', imagePos:'right' },
+    { title:'', highlight:'', category:'', icon:'📊', color:'#0e8a8a', body:'', imageSrc:'', imagePos:'right', footerText:'Para dúvidas, fale com o time ICM.', footerEmail:'', footerImageSrc:'' },
   ],
 };
 
@@ -984,7 +988,7 @@ function renderNpSections(){
 
 /* --- páginas internas --- */
 function addNpPage(){
-  newsPdfData.pages.push({ title:'', highlight:'', category:'', icon:NEWS_ICONS[0], color:NEWS_COLORS[0], body:'', imageSrc:'', imagePos:'right' });
+  newsPdfData.pages.push({ title:'', highlight:'', category:'', icon:NEWS_ICONS[0], color:NEWS_COLORS[0], body:'', imageSrc:'', imagePos:'right', footerText:'Para dúvidas, fale com o time ICM.', footerEmail:'', footerImageSrc:'' });
   renderNpPages();
   renderNewsPdfPreview();
 }
@@ -1004,6 +1008,12 @@ function handleNpPageImg(idx, input){
   const file = input.files[0]; if(!file) return;
   const reader = new FileReader();
   reader.onload = e => { newsPdfData.pages[idx].imageSrc = e.target.result; renderNewsPdfPreview(); };
+  reader.readAsDataURL(file);
+}
+function handleNpFooterImg(idx, input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { newsPdfData.pages[idx].footerImageSrc = e.target.result; renderNewsPdfPreview(); };
   reader.readAsDataURL(file);
 }
 
@@ -1044,6 +1054,12 @@ function renderNpPages(){
           return `<label><input type="radio" name="pos${pi}" value="${val}" ${pg.imagePos===val?'checked':''} onchange="newsPdfData.pages[${pi}].imagePos='${val}';renderNewsPdfPreview()"> ${lbl}</label>`;
         }).join('')}
       </div>
+      <label>Texto do rodapé</label>
+      <input type="text" value="${escapeAttr(pg.footerText)}" oninput="newsPdfData.pages[${pi}].footerText=this.value;renderNewsPdfPreview()">
+      <label>E-mail (opcional)</label>
+      <input type="text" placeholder="icm@mv.com.br" value="${escapeAttr(pg.footerEmail)}" oninput="newsPdfData.pages[${pi}].footerEmail=this.value;renderNewsPdfPreview()">
+      <label>Imagem do rodapé (opcional)</label>
+      <input type="file" accept="image/*" onchange="handleNpFooterImg(${pi}, this)">
     `;
     wrap.appendChild(div);
   });
@@ -1081,7 +1097,7 @@ function npPageHtml(pg){
   } else {
     mediaBlock = bodyHtml;
   }
-  return `
+  const content = `
     <div class="pdf-page-body">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
         <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:7px;background:${pg.color};font-size:15px;">${pg.icon}</span>
@@ -1091,17 +1107,35 @@ function npPageHtml(pg){
       ${pg.highlight ? `<div style="font-size:14px;font-style:italic;color:#0e8a8a;margin-bottom:14px;">${escapeHtml(pg.highlight)}</div>` : ''}
       ${mediaBlock}
     </div>`;
+  const footerImg = pg.footerImageSrc ? `<img src="${pg.footerImageSrc}" style="height:32px;width:auto;display:block;">` : '';
+  const footer = `
+    <div style="padding:16px 34px;border-top:1px solid #eee;display:flex;align-items:center;justify-content:space-between;gap:14px;">
+      <div style="font-size:11.5px;font-style:italic;color:#667;">
+        ${escapeHtml(pg.footerText)}${pg.footerEmail ? ` — <span style="color:#0e8a8a;">${escapeHtml(pg.footerEmail)}</span>` : ''}
+      </div>
+      ${footerImg}
+    </div>`;
+  return content + footer;
 }
 
 function buildNewsPdfBody(){
   const coverSections = newsPdfData.sections.map(npSectionHtml).join('');
   const cover = `
     <div class="pdf-page" data-page="cover">
-      <img src="${newsPdfData.bannerUrl}" style="width:100%;display:block;">
-      <div style="padding:10px 34px;text-align:right;border-bottom:1px solid #eee;">
-        <span style="font-family:Arial,Helvetica,sans-serif;color:#0e8a8a;font-size:12px;font-weight:bold;">${escapeHtml(newsPdfData.edition)}</span>
+      <div>
+        <img src="${newsPdfData.bannerUrl}" style="width:100%;display:block;">
+        <div style="padding:10px 34px;text-align:right;border-bottom:1px solid #eee;">
+          <span style="font-family:Arial,Helvetica,sans-serif;color:#0e8a8a;font-size:12px;font-weight:bold;">${escapeHtml(newsPdfData.edition)}</span>
+        </div>
+        ${coverSections}
       </div>
-      ${coverSections}
+      <div style="background:#122c42;padding:14px 34px;display:flex;align-items:center;justify-content:space-between;gap:14px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <img src="${ANIV_LOGO_MV_SRC}" style="height:26px;width:auto;display:block;">
+          <span style="color:#cfe7e7;font-size:11px;">Tudo que você precisa em um só lugar! Acesse o Portal ICM.</span>
+        </div>
+        <span style="color:#3ad6d6;font-size:11px;white-space:nowrap;">icm.mv.com.br</span>
+      </div>
     </div>`;
   const pages = newsPdfData.pages.map(pg => `<div class="pdf-page" data-page="inner">${npPageHtml(pg)}</div>`).join('');
   return cover + pages;
