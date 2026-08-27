@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ICM News & ICM Informa — v2 (protótipo)</title>
+<style>
+  :root{
+    --ink:#132330;
+    --ink-soft:#4a5a63;
+    --teal-dark:#1a3d5c;
+    --teal:#1a8f7f;
+    --teal-bright:#2cbfad;
+    --paper:#f4f6f6;
+    --card:#ffffff;
+    --line:#e2e8e8;
+    --red:#d8483f;
+    --amber:#c98a12;
+    --blue:#1f6fb2;
+    --green:#2e8b5a;
+    --gray:#6b7680;
+    --radius:10px;
+    font-family:"Segoe UI", Arial, Helvetica, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Segoe UI", Arial, Helvetica, sans-serif;
+  }
+  header.app{
+    background:#122c42;
+    color:#fff;
+    height:52px;
+    display:flex;
+    align-items:center;
+    padding:0 18px;
+    border-bottom:1.5px solid rgba(44,191,173,.25);
+  }
+  .tbrand{
+    display:flex;
+    align-items:center;
+    margin-right:12px;
+    font-size:16px;
+    font-weight:700;
+    color:#fff;
+    white-space:nowrap;
+  }
+  .tbrand svg{ margin-right:9px; }
+  .tbrand span{ color:var(--teal-bright); }
+  .tsep{
+    width:1px;
+    height:24px;
+    background:rgba(255,255,255,.13);
+    margin-right:12px;
+  }
+  .tmod-name{
+    font-size:12px;
+    font-weight:700;
+    color:rgba(255,255,255,.5);
+    letter-spacing:.3px;
+    white-space:nowrap;
+  }
+  .app-desc{
+    margin:0;
+    font-size:12px;
+    color:var(--ink-soft);
+    background:#eef6f6;
+    padding:6px 18px;
+    border-bottom:1px solid var(--line);
+  }
+  .tag{
+    display:inline-block;
+    background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.25);
+    color:#dff3f3;
+    font-size:11px;
+    padding:2px 8px;
+    border-radius:999px;
+    margin-left:10px;
+    vertical-align:middle;
+  }
+  nav.tabs{
+    display:flex;
+    gap:4px;
+    background:var(--card);
+    border-bottom:1px solid var(--line);
+    padding:0 24px;
+    position:sticky;
+    top:0;
+    z-index:10;
+  }
+  nav.tabs button{
+    border:none;
+    background:transparent;
+    padding:14px 18px;
+    font-size:14px;
+    font-weight:600;
+    color:var(--ink-soft);
+    cursor:pointer;
+    border-bottom:3px solid transparent;
+  }
+  nav.tabs button.active{
+    color:var(--teal-dark);
+    border-bottom-color:var(--teal);
+  }
+  main{
+    max-width:1180px;
+    margin:0 auto;
+    padding:24px;
+    display:none;
+  }
+  main.active{display:block;}
+  .grid{
+    display:grid;
+    grid-template-columns:minmax(320px,420px) 1fr;
+    gap:20px;
+    align-items:start;
+  }
+  @media (max-width: 920px){ .grid{grid-template-columns:1fr;} }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin-bottom:16px;
+  }
+  .card h2{
+    font-size:14px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--ink-soft);
+    margin:0 0 14px 0;
+  }
+  label{
+    display:block;
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin:10px 0 4px;
+  }
+  label.first{margin-top:0;}
+  input[type=text], textarea, select{
+    width:100%;
+    border:1px solid #cfd8d8;
+    border-radius:6px;
+    padding:8px 10px;
+    font-size:13px;
+    font-family:inherit;
+    color:var(--ink);
+    background:#fff;
+  }
+  textarea{resize:vertical; min-height:56px;}
+  .hint{font-size:11px;color:#8a9598;margin-top:3px;}
+  .item-block{
+    border:1px dashed #cfd8d8;
+    border-radius:8px;
+    padding:12px 14px;
+    margin-bottom:12px;
+    position:relative;
+    background:#fbfcfc;
+  }
+  .item-block .remove{
+    position:absolute;
+    top:8px;
+    right:8px;
+    background:none;
+    border:none;
+    color:#b04a42;
+    font-size:12px;
+    cursor:pointer;
+    font-weight:600;
+  }
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    border:1px solid var(--teal);
+    color:var(--teal-dark);
+    background:#fff;
+    font-size:13px;
+    font-weight:600;
+    padding:8px 14px;
+    border-radius:6px;
+    cursor:pointer;
+  }
+  .btn:hover{background:#eafafa;}
+  .btn.solid{
+    background:var(--teal-dark);
+    border-color:var(--teal-dark);
+    color:#fff;
+  }
+  .btn.solid:hover{background:#0d2b37;}
+  .btn.ghost{
+    border-color:#cfd8d8;
+    color:var(--ink-soft);
+  }
+  .row-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;}
+  .preview-wrap{
+    background:#e9edee;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px;
+    overflow:auto;
+  }
+  .toast{
+    position:fixed;
+    bottom:22px;
+    left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--ink);
+    color:#fff;
+    padding:10px 18px;
+    border-radius:8px;
+    font-size:13px;
+    opacity:0;
+    pointer-events:none;
+    transition:all .25s ease;
+    z-index:100;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  pre.chattext{
+    white-space:pre-wrap;
+    font-family:"Segoe UI", Arial, sans-serif;
+    font-size:13.5px;
+    line-height:1.55;
+    background:#fbfcfc;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px 16px;
+    margin:0;
+  }
+  .cover-preview{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    background:#fbfcfc;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:10px;
+    margin-top:8px;
+  }
+  .cover-preview img{
+    width:90px;
+    height:56px;
+    object-fit:cover;
+    border-radius:4px;
+    background:#ddd;
+  }
+  .cover-preview .meta{font-size:12px; color:var(--ink-soft); flex:1;}
+  .icon-grid, .color-grid{display:flex; flex-wrap:wrap; gap:6px; margin-top:4px;}
+  .icon-btn{
+    width:34px; height:34px;
+    border:1.5px solid #dfe6e6;
+    background:#fff;
+    border-radius:8px;
+    font-size:17px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn.active{border-color:var(--teal); background:#eafafa;}
+  .color-btn{
+    width:26px; height:26px;
+    border-radius:50%;
+    border:2px solid transparent;
+    cursor:pointer;
+  }
+  .color-btn.active{border-color:#222;}
+  .acoes-list{display:flex; flex-direction:column; gap:8px; margin-top:4px;}
+  .acao-row{display:flex; gap:8px; align-items:center;}
+  .acao-row input{flex:1; margin:0;}
+  .acao-remove{
+    flex-shrink:0;
+    width:30px; height:30px;
+    border:1px solid #f0c0bc;
+    background:#fdf0ee;
+    color:#b04a42;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:13px;
+  }
+  .acao-remove:hover{background:#fbe0dc;}
+  .draft-status{
+    font-size:11px;
+    font-weight:600;
+    color:var(--ink-soft);
+    letter-spacing:.2px;
+    transition:.3s;
+  }
+  .draft-status.saving{color:#c98a12;}
+  .draft-status.saved{color:#1a8f7f;}
+  .draft-status.error{color:#d8483f;}
+  .cfg-overlay{
+    display:none; position:fixed; inset:0;
+    background:rgba(10,20,25,.45); z-index:200;
+  }
+  .cfg-modal{
+    display:none; position:fixed; top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    background:#fff; border-radius:12px; padding:24px 26px;
+    width:420px; max-width:92vw; z-index:201;
+    box-shadow:0 12px 40px rgba(0,0,0,.25);
+  }
+  .cfg-modal h3{margin:0 0 14px; font-size:16px; color:var(--ink);}
+  .cfg-status{font-size:12px; margin-top:6px; min-height:16px;}
+  .type-picker{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;}
+  .type-chip{
+    border:1.5px solid var(--line);
+    background:#fff;
+    border-radius:999px;
+    padding:7px 13px;
+    font-size:12.5px;
+    font-weight:600;
+    cursor:pointer;
+    color:var(--ink-soft);
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .type-chip.active{
+    border-color:currentColor;
+    background:currentColor;
+    color:#fff !important;
+  }
+  .type-chip.active .lbl{color:#fff;}
+  .section-note{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    background:#eef6f6;
+    border:1px solid #d3e9e9;
+    border-radius:8px;
+    padding:10px 14px;
+    margin-bottom:16px;
+  }
+  .divider-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:#8a9598;
+    margin:18px 0 8px;
+    font-weight:700;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+<header class="app">
+  <div class="tbrand">
+    <svg width="28" height="28" viewBox="0 0 80 80" fill="none">
+      <circle cx="40" cy="40" r="33" stroke="#2cbfad" stroke-width="2"/>
+      <ellipse cx="40" cy="40" rx="14" ry="33" stroke="#2cbfad" stroke-width="1.5"/>
+      <line x1="7" y1="40" x2="73" y2="40" stroke="#2cbfad" stroke-width="1.5"/>
+      <path d="M10 26 Q40 18 70 26" fill="none" stroke="#2cbfad" stroke-width="1"/>
+      <path d="M10 54 Q40 62 70 54" fill="none" stroke="#2cbfad" stroke-width="1"/>
+      <circle cx="40" cy="40" r="9" fill="#f5a623"/>
+      <polygon points="37,37 46,40 37,43" fill="#1a3d5c"/>
+      <circle cx="59" cy="12" r="5" fill="#f5a623"/>
+      <text x="3" y="13" fill="#2cbfad" font-size="8" font-weight="700" font-family="Arial">360°</text>
+      <circle cx="7" cy="8" r="1.3" fill="#2cbfad"/><circle cx="14" cy="5" r="1.3" fill="#2cbfad"/>
+      <circle cx="73" cy="8" r="1.3" fill="#2cbfad"/><circle cx="67" cy="6" r="1.3" fill="#2cbfad"/>
+      <line x1="7" y1="8" x2="14" y2="5" stroke="#2cbfad" stroke-width=".8"/>
+      <line x1="67" y1="6" x2="73" y2="8" stroke="#2cbfad" stroke-width=".8"/>
+    </svg>
+    <span>Studio</span>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="active" data-tab="news">ICM News</button>
+  <button data-tab="informa">ICM Informa</button>
+  <button data-tab="aniversario">Aniversário</button>
+</nav>
+
+<!-- ======================= ICM NEWS ======================= -->
+<main class="active" id="tab-news">
+  <div class="section-note">
+    Preencha a edição e as notícias à esquerda. À direita você tem duas saídas: o <strong>HTML pronto para colar no Gmail</strong> e o <strong>texto para postar no chat</strong> (com a capa para anexar separadamente).
+  </div>
+  <div class="grid">
+    <!-- FORM -->
+    <div>
+      <div class="card">
+        <h2>Rascunho (backup automático)</h2>
+        <div class="row-actions" style="align-items:center;">
+          <button class="btn ghost" onclick="loadNewsDraft()">📥 Carregar rascunho</button>
+          <button class="btn ghost" onclick="saveNewsDraft(true)">☁️ Salvar rascunho agora</button>
+          <button class="btn ghost" onclick="openNewsConfig()">⚙️ Configurar</button>
+          <span class="draft-status" id="news-draft-status"></span>
+        </div>
+        <div class="hint">Salva sozinho a cada poucos segundos numa planilha do Google (mesma lógica do ICM Studio v1), assim como o rascunho não se perde se a aba fechar. Configure a URL do Apps Script uma vez em "Configurar".</div>
+      </div>
+
+      <div class="card">
+        <h2>Edição</h2>
+        <label class="first">Texto da edição</label>
+        <input type="text" id="edition" value="EDIÇÃO MENSAL | AGOSTO 2026" oninput="renderNews()">
+
+        <label>URL do banner do cabeçalho (para o e-mail)</label>
+        <input type="text" id="bannerUrl" value="assets/banner_icm_news.png" oninput="renderNews()">
+        <div class="hint">Suba o arquivo <code>banner_icm_news.png</code> (gerado junto com esta ferramenta) no GitHub Pages / portal ICM e cole aqui a URL pública. Enquanto isso, o caminho relativo já mostra a prévia certinha.</div>
+        <div class="cover-preview">
+          <img id="bannerThumb" src="assets/banner_icm_news.png" onerror="this.style.opacity=0.15">
+          <div class="meta">Este banner vai <strong>dentro do HTML do e-mail</strong> (cabeçalho). Não precisa ser anexado no chat.</div>
+        </div>
+
+        <label>Imagem quadrada para o chat (genérica, sempre a mesma)</label>
+        <div class="cover-preview">
+          <img src="assets/square_icm_news.png" onerror="this.style.opacity=0.15">
+          <div class="meta"><code>square_icm_news.png</code> — mesma identidade do banner, em formato quadrado. Anexe este arquivo junto sempre que postar o texto da ICM News no chat.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Notícias</h2>
+        <div id="itemsWrap"></div>
+        <div class="row-actions">
+          <button class="btn ghost" onclick="addItem()">+ Adicionar notícia</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PREVIEWS -->
+    <div>
+      <div class="card">
+        <h2>Prévia do e-mail (cole isto no Gmail)</h2>
+        <div class="preview-wrap"><div id="emailPreview"></div></div>
+        <div class="row-actions">
+          <button class="btn solid" onclick="copyEmailHtml()">📋 Copiar HTML para colar no Gmail</button>
+        </div>
+        <div class="hint" style="margin-top:10px;">
+          Fluxo sugerido: clique em copiar → abra um novo e-mail no Gmail → clique no corpo → Ctrl+V (ou ⌘V). O Gmail cola o conteúdo já formatado, sem precisar mexer em HTML bruto.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Texto para postar no chat</h2>
+        <label class="first">Frase de abertura</label>
+        <input type="text" id="chatIntro" value="📰 Saiu a nova edição da ICM News!" oninput="renderNews()">
+        <div class="divider-label">Prévia (título em negrito e maior, como vai ficar ao colar)</div>
+        <div class="chattext" id="chatPreviewNews"></div>
+        <div class="row-actions">
+          <button class="btn solid" onclick="copyRichFromElement('chatPreviewNews','Copiado! Cole no chat (Ctrl+V) — título já sai em negrito e maior.')">📋 Copiar formatado</button>
+          <button class="btn ghost" onclick="copyText('chatPreviewNews', buildChatTextNews())">📄 Copiar texto simples</button>
+          <button class="btn ghost" onclick="window.open('assets/square_icm_news.png','_blank')">🖼️ Abrir imagem quadrada (p/ anexar)</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Texto para postar no WhatsApp</h2>
+        <label class="first">Frase de abertura</label>
+        <textarea id="whatsIntro" oninput="renderNews()">A edição de Agosto do ICM News já está disponível! 📢
+Reunimos os principais alinhamentos, atualizações e novidades que impactam nossa rotina comercial.</textarea>
+        <div class="hint">No WhatsApp só entram os títulos e os links (sem o resumo) — mais direto para leitura no celular.</div>
+        <div class="divider-label">Prévia</div>
+        <pre class="chattext" id="chatPreviewWhats"></pre>
+        <div class="row-actions">
+          <button class="btn solid" onclick="copyText('chatPreviewWhats')">📋 Copiar texto</button>
+          <button class="btn ghost" onclick="window.open('assets/square_icm_news.png','_blank')">🖼️ Abrir imagem quadrada (p/ anexar)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ======================= ICM INFORMA ======================= -->
+<main id="tab-informa">
+  <div class="section-note">
+    O tipo de comunicado abre os campos específicos dele (datas, janelas, sistema afetado etc.) — isso vale pro gerenciador. No <strong>e-mail</strong> o tipo aparece como uma faixa colorida; no <strong>texto do chat</strong> ele não aparece em texto — em vez disso, anexe a imagem genérica do tema junto com o post.
+  </div>
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>Tipo de comunicado</h2>
+        <div class="type-picker" id="typePicker"></div>
+      </div>
+
+      <div class="card">
+        <h2>Conteúdo</h2>
+        <label class="first">Título</label>
+        <input type="text" id="infTitulo" oninput="onInfCommonInput('titulo',this.value)">
+
+        <label>Mensagem</label>
+        <textarea id="infMsg" oninput="onInfCommonInput('mensagem',this.value)"></textarea>
+        <div class="hint">Use <code>**negrito**</code> para destaque. Parágrafo novo = linha em branco. Linha com <code>-</code> vira item de lista.</div>
+
+        <div id="infExtraFields"></div>
+
+        <label>Link com mais detalhes (opcional)</label>
+        <input type="text" id="infLink" placeholder="https://..." oninput="onInfCommonInput('link',this.value)">
+      </div>
+
+      <div class="card">
+        <h2>Banner do cabeçalho (para o e-mail)</h2>
+        <label class="first">URL do banner</label>
+        <input type="text" id="bannerUrlInforma" value="assets/banner_icm_informa.png" oninput="renderInforma()">
+        <div class="hint">Mesma lógica do ICM News: suba <code>banner_icm_informa.png</code> onde for hospedar e cole a URL pública aqui.</div>
+        <div class="cover-preview">
+          <img id="bannerThumbInforma" src="assets/banner_icm_informa.png" onerror="this.style.opacity=0.15">
+          <div class="meta">Vai no topo do e-mail. A faixa colorida do tipo entra logo abaixo dele, dentro do HTML.</div>
+        </div>
+
+        <label>Imagem quadrada genérica (para o chat)</label>
+        <div class="cover-preview">
+          <img src="assets/square_icm_informa.png" onerror="this.style.opacity=0.15">
+          <div class="meta"><code>square_icm_informa.png</code> — use quando o comunicado não tiver um tema específico com ícone próprio (seção de temas acima).</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>Prévia do e-mail (cole isto no Gmail)</h2>
+        <div class="preview-wrap"><div id="emailPreviewInforma"></div></div>
+        <div class="row-actions">
+          <button class="btn solid" onclick="copyRichFromElement('emailPreviewInforma','HTML copiado! Cole no corpo do e-mail no Gmail.')">📋 Copiar HTML para colar no Gmail</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Texto para postar no chat</h2>
+        <div class="divider-label">Prévia (título em negrito e maior — o tipo não entra em texto)</div>
+        <div class="chattext" id="chatPreviewInforma"></div>
+        <div class="row-actions">
+          <button class="btn solid" onclick="copyRichFromElement('chatPreviewInforma','Copiado! Cole no chat (Ctrl+V).')">📋 Copiar formatado</button>
+          <button class="btn ghost" onclick="copyText('chatPreviewInforma', buildChatTextInforma())">📄 Copiar texto simples</button>
+          <button class="btn ghost" id="btnOpenThemeImg">🖼️ Abrir imagem do tema (p/ anexar)</button>
+        </div>
+        <div class="hint" style="margin-top:10px;">Poste o texto copiado junto com a imagem do tema — ela substitui o aviso textual de gravidade.</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ======================= ANIVERSÁRIO ======================= -->
+<main id="tab-aniversario">
+  <div class="section-note">
+    Réplica fiel do card de Aniversário do ICM Studio v1 — mesmo layout, texto fixo de parabenização, assinatura e logo reais. Só os dados do aniversariante e do diretor são editáveis.
+  </div>
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>Dados do aniversariante</h2>
+        <label class="first">Nome completo</label>
+        <input type="text" id="an-nome" value="Elayne Barros" oninput="anivData.nome=this.value;renderAnivPreview()">
+        <label>Cargo</label>
+        <input type="text" id="an-cargo" value="Analista de Marketing" oninput="anivData.cargo=this.value;renderAnivPreview()">
+        <label>Foto do aniversariante</label>
+        <input type="file" accept="image/*" onchange="handleAnivFoto(this)">
+        <div class="hint">Se não houver foto, mostra um placeholder — igual ao v1.</div>
+      </div>
+      <div class="card">
+        <h2>Assinatura</h2>
+        <label class="first">Nome do diretor</label>
+        <input type="text" id="an-dir" value="Jeferson Sadocci" oninput="anivData.diretor=this.value;renderAnivPreview()">
+        <label>Cargo do diretor</label>
+        <textarea id="an-dircar" oninput="anivData.cargoDiretor=this.value;renderAnivPreview()">Diretor Corporativo
+de Mercado e Cliente</textarea>
+        <div class="hint">Assinatura digitalizada e logo MV são fixas (mesmas do v1), embutidas na própria ferramenta.</div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h2>Prévia — 900 × 506px (16:9)</h2>
+        <div class="preview-wrap" style="overflow:auto;">
+          <div id="aniv-card-render" style="width:900px;height:506px;background:#fff;border-radius:8px;overflow:hidden;position:relative;box-shadow:0 2px 20px rgba(0,0,0,.12);font-family:Arial,Helvetica,sans-serif"></div>
+        </div>
+        <div class="row-actions">
+          <button class="btn solid" onclick="downloadAnivCard()">🖼️ Baixar imagem (PNG)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="cfg-overlay" id="cfg-overlay" onclick="closeNewsConfig()"></div>
+<div class="cfg-modal" id="cfg-modal">
+  <h3>Configurações do rascunho (ICM News)</h3>
+  <label class="first">URL do Google Apps Script</label>
+  <input type="text" id="cfg-url" placeholder="https://script.google.com/macros/s/.../exec">
+  <div class="hint">Cole aqui a URL gerada ao publicar o Apps Script (veja o arquivo <code>apps_script_icm_news_backup.gs.txt</code> que acompanha esta ferramenta).</div>
+  <label>Auto-save (segundos após última alteração)</label>
+  <input type="text" id="cfg-interval" value="5">
+  <div class="cfg-status" id="cfg-url-status"></div>
+  <div class="row-actions" style="margin-top:14px;">
+    <button class="btn solid" onclick="saveNewsConfig()">Salvar configurações</button>
+    <button class="btn ghost" onclick="closeNewsConfig()">Cancelar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- tabs ---------- */
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+/* ---------- ICM NEWS ---------- */
+const NEWS_ICONS=['📊','🚀','🏆','🔔','💡','🤝','🛠️','📅','🎯','🎉','⚙️','📈'];
+const NEWS_COLORS=['#1a8f7f','#1f6fb2','#2e8b5a','#c98a12','#d8483f','#6a4fb0','#6b7680'];
+
+let newsItems=[
+  {icon:'📊', color:'#1a8f7f', title:'Novo painel de metas por vertical', summary:'A partir desta semana, cada vertical comercial acompanha suas metas em um painel dedicado, atualizado diariamente.', link:'https://icm.mv.com.br/noticias/painel-metas'},
+  {icon:'🚀', color:'#1f6fb2', title:'Atualização da taxonomia de contas no CRM', summary:'Novos campos de Segmento e Perfil da Conta já estão disponíveis para todos os times.', link:'https://icm.mv.com.br/noticias/taxonomia-crm'},
+];
+
+function addItem(){
+  newsItems.push({icon:NEWS_ICONS[0], color:NEWS_COLORS[0], title:'',summary:'',link:''});
+  renderItemsForm();
+  renderNews();
+}
+function removeItem(i){
+  newsItems.splice(i,1);
+  renderItemsForm();
+  renderNews();
+}
+function updateItem(i, field, value){
+  newsItems[i][field]=value;
+  renderNews();
+}
+function updateItemIconColor(i, field, value){
+  newsItems[i][field]=value;
+  renderItemsForm();
+  renderNews();
+}
+
+function renderItemsForm(){
+  const wrap=document.getElementById('itemsWrap');
+  wrap.innerHTML='';
+  newsItems.forEach((item,i)=>{
+    const div=document.createElement('div');
+    div.className='item-block';
+    div.innerHTML=`
+      <button class="remove" onclick="removeItem(${i})">remover ✕</button>
+      <label class="first">Ícone</label>
+      <div class="icon-grid">
+        ${NEWS_ICONS.map(ic=>`<button type="button" class="icon-btn${ic===item.icon?' active':''}" onclick="updateItemIconColor(${i},'icon','${ic}')">${ic}</button>`).join('')}
+      </div>
+      <label>Cor</label>
+      <div class="color-grid">
+        ${NEWS_COLORS.map(c=>`<button type="button" class="color-btn${c===item.color?' active':''}" style="background:${c}" onclick="updateItemIconColor(${i},'color','${c}')"></button>`).join('')}
+      </div>
+      <label>Título</label>
+      <input type="text" value="${escapeAttr(item.title)}" oninput="updateItem(${i},'title',this.value)">
+      <label>Resumo</label>
+      <textarea oninput="updateItem(${i},'summary',this.value)">${item.summary}</textarea>
+      <label>Link ("Leia mais")</label>
+      <input type="text" value="${escapeAttr(item.link)}" oninput="updateItem(${i},'link',this.value)">
+    `;
+    wrap.appendChild(div);
+  });
+}
+
+function escapeAttr(s){ return (s||'').replace(/"/g,'&quot;'); }
+function escapeHtml(s){
+  return (s||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function buildEmailHtml(){
+  const edition=document.getElementById('edition').value;
+  const banner=document.getElementById('bannerUrl').value;
+  const rows=newsItems.map(item=>`
+    <tr><td style="padding:20px 24px;border-bottom:1px solid #e5e5e5;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+        <td width="70" valign="top" style="padding-right:16px;">
+          <table role="presentation" width="70" height="70" cellpadding="0" cellspacing="0" border="0" style="background:${item.color};border-radius:10px;">
+            <tr><td align="center" valign="middle" style="font-size:30px;line-height:70px;height:70px;">${item.icon}</td></tr>
+          </table>
+        </td>
+        <td valign="top">
+          <div style="font-family:Arial,Helvetica,sans-serif;color:#1a3d5c;font-size:16px;font-weight:bold;margin-bottom:6px;">${escapeHtml(item.title)}</div>
+          <div style="font-family:Arial,Helvetica,sans-serif;color:#555555;font-size:13px;line-height:1.45;margin-bottom:12px;">${escapeHtml(item.summary)}</div>
+          <a href="${item.link}" style="display:inline-block;border:1px solid #2cbfad;color:#1a8f7f;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;padding:7px 16px;border-radius:3px;text-decoration:none;">LEIA MAIS</a>
+        </td>
+      </tr></table>
+    </td></tr>`).join('');
+
+  return `
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f2f2f2;">
+    <tr><td align="center" style="padding:24px 12px;">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;max-width:600px;">
+        <tr><td>
+          <img src="${banner}" width="600" style="display:block;width:100%;max-width:600px;height:auto;" alt="ICM News" />
+        </td></tr>
+        <tr><td style="padding:10px 24px;border-bottom:1px solid #e5e5e5;" align="right">
+          <span style="font-family:Arial,Helvetica,sans-serif;color:#1a8f7f;font-size:12px;font-weight:bold;">${escapeHtml(edition)}</span>
+        </td></tr>
+        ${rows}
+        <tr><td style="background:#1a3d5c;padding:14px 24px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+            <td style="font-family:Arial,Helvetica,sans-serif;color:#cfe7e7;font-size:11px;">Tudo que você precisa em um só lugar! Acesse o Portal ICM.</td>
+            <td align="right" style="font-family:Arial,Helvetica,sans-serif;color:#7fe0d4;font-size:11px;white-space:nowrap;">icm.mv.com.br</td>
+          </tr></table>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>`;
+}
+
+function buildChatTextNews(){
+  const intro=document.getElementById('chatIntro').value;
+  const parts=[`**${intro}**`,''];
+  newsItems.forEach(item=>{
+    parts.push(`**${item.icon} ${item.title}**`);
+    parts.push(item.summary);
+    parts.push(`👉 Leia mais: ${item.link}`);
+    parts.push('');
+  });
+  return parts.join('\n').trim();
+}
+
+function buildChatHtmlNews(){
+  const intro=document.getElementById('chatIntro').value;
+  const blocks=newsItems.map(item=>`
+    <div style="margin-bottom:16px;">
+      <div style="font-size:17px;font-weight:800;color:#1a3d5c;margin-bottom:4px;">${item.icon} ${escapeHtml(item.title)}</div>
+      <div style="font-size:14px;color:#333;line-height:1.5;margin-bottom:6px;">${escapeHtml(item.summary)}</div>
+      <div style="font-size:13.5px;">👉 Leia mais: <a href="${item.link}">${item.link}</a></div>
+    </div>`).join('');
+  return `<div style="font-family:Arial,Helvetica,sans-serif;">
+    <div style="font-size:23px;font-weight:800;color:#1a3d5c;margin-bottom:6px;">${escapeHtml(intro)}</div>
+    <div style="height:3px;width:64px;background:#2cbfad;margin:0 0 18px;"></div>
+    ${blocks}
+  </div>`;
+}
+
+function buildChatTextWhats(){
+  const introLines=document.getElementById('whatsIntro').value.split('\n');
+  const firstLine=introLines[0]||'';
+  const restLines=introLines.slice(1).join('\n');
+  const parts=[`*${firstLine}*`];
+  if(restLines) parts.push(restLines);
+  parts.push('');
+  newsItems.forEach(item=>{
+    parts.push(`*${item.title}*`);
+    parts.push(item.link);
+    parts.push('');
+  });
+  return parts.join('\n').trim();
+}
+
+function renderNews(){
+  document.getElementById('emailPreview').innerHTML = buildEmailHtml();
+  document.getElementById('chatPreviewNews').innerHTML = buildChatHtmlNews();
+  document.getElementById('chatPreviewWhats').textContent = buildChatTextWhats();
+  const bannerUrl=document.getElementById('bannerUrl').value;
+  document.getElementById('bannerThumb').src=bannerUrl;
+  scheduleNewsAutoSave();
+}
+
+function copyRichFromElement(elId, successMsg){
+  const node=document.getElementById(elId);
+  const range=document.createRange();
+  range.selectNodeContents(node);
+  const sel=window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  let ok=false;
+  try{ ok=document.execCommand('copy'); }catch(e){ ok=false; }
+  sel.removeAllRanges();
+  showToast(ok ? successMsg : 'Não deu pra copiar automaticamente — selecione o conteúdo manualmente (clique dentro, Ctrl+A) e copie.');
+}
+
+function copyEmailHtml(){
+  copyRichFromElement('emailPreview', 'HTML copiado! Cole no corpo do e-mail no Gmail.');
+}
+
+function copyText(elId, textOverride){
+  const text= textOverride !== undefined ? textOverride : document.getElementById(elId).textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    showToast('Texto copiado!');
+  }).catch(()=>{
+    const ta=document.createElement('textarea');
+    ta.value=text;
+    document.body.appendChild(ta);
+    ta.select();
+    try{ document.execCommand('copy'); showToast('Texto copiado!'); }
+    catch(e){ showToast('Não foi possível copiar — selecione o texto manualmente.'); }
+    document.body.removeChild(ta);
+  });
+}
+
+/* ---------- ICM INFORMA ---------- */
+const informaTypes=[
+  {key:'alerta', icon:'🔴', label:'Alerta de instabilidade', color:'#d8483f', img:'assets/tema_alerta.png',
+    fields:[
+      {id:'sistema', label:'Sistema / área afetada'},
+      {id:'inicio', label:'Início da instabilidade'},
+      {id:'eta', label:'Previsão de atualização'},
+    ]},
+  {key:'aviso', icon:'🟡', label:'Aviso importante', color:'#c98a12', img:'assets/tema_aviso.png',
+    fields:[
+      {id:'validade', label:'Válido até'},
+    ]},
+  {key:'info', icon:'🔵', label:'Comunicado importante', color:'#1f6fb2', img:'assets/tema_info.png',
+    fields:[]},
+  {key:'resolvido', icon:'🟢', label:'Instabilidade normalizada', color:'#2e8b5a', img:'assets/tema_resolvido.png',
+    fields:[
+      {id:'duracao', label:'Duração total do problema'},
+      {id:'horario', label:'Horário de normalização'},
+    ]},
+  {key:'manutencao', icon:'🛠️', label:'Manutenção programada', color:'#6b7680', img:'assets/tema_manutencao.png',
+    fields:[
+      {id:'data', label:'Data da manutenção'},
+      {id:'janela', label:'Janela de indisponibilidade'},
+      {id:'sistemas', label:'Sistemas afetados'},
+    ]},
+  {key:'treinamentos', icon:'🎓', label:'Treinamentos', color:'#534ab7', img:'assets/tema_treinamentos.png',
+    fields:[
+      {id:'data', label:'Data'},
+      {id:'horario', label:'Horário'},
+      {id:'local', label:'Link / Local'},
+    ]},
+  {key:'processos', icon:'🔄', label:'Processos', color:'#0d7c66', img:'assets/tema_processos.png',
+    fields:[]},
+  {key:'feriado', icon:'🏖️', label:'Feriado', color:'#ba7517', img:'assets/tema_feriado.png',
+    fields:[]},
+  {key:'novidade_crm', icon:'✨', label:'Novidade no CRM', color:'#b03a8a', img:'assets/tema_novidade_crm.png',
+    fields:[]},
+  {key:'datas_fechamento', icon:'🗓️', label:'Datas de fechamento', color:'#993c1d', img:'assets/tema_datas_fechamento.png',
+    fields:[
+      {id:'acoes', label:'Ações e datas', kind:'action-date-list'},
+    ]},
+  {key:'agendas', icon:'📆', label:'Agendas', color:'#424799', img:'assets/tema_agendas.png',
+    fields:[
+      {id:'data', label:'Data'},
+      {id:'horario', label:'Horário'},
+      {id:'local', label:'Link / Local'},
+    ]},
+];
+
+let fechamentoAcoes=['Fechamento controladoria','Foto forecast','Foto RECOM']; // sugestões de exemplo (placeholders)
+
+const informaDefaults={
+  alerta:{titulo:'Instabilidade no acesso ao Salesforce', mensagem:'Estamos verificando uma lentidão no carregamento de relatórios e dashboards. Times de suporte já foram acionados.', link:'', extra:{sistema:'Salesforce — módulo de Relatórios', inicio:'14:20', eta:'Nova atualização até 15h'}},
+  aviso:{titulo:'', mensagem:'', link:'', extra:{validade:''}},
+  info:{titulo:'', mensagem:'', link:'', extra:{}},
+  resolvido:{titulo:'', mensagem:'', link:'', extra:{duracao:'', horario:''}},
+  manutencao:{titulo:'', mensagem:'', link:'', extra:{data:'', janela:'', sistemas:''}},
+  treinamentos:{titulo:'', mensagem:'', link:'', extra:{data:'', horario:'', local:''}},
+  processos:{titulo:'', mensagem:'', link:'', extra:{}},
+  feriado:{titulo:'', mensagem:'', link:'', extra:{}},
+  novidade_crm:{titulo:'', mensagem:'', link:'', extra:{}},
+  datas_fechamento:{titulo:'', mensagem:'', link:'', extra:{acoes:[
+    {acao:'', dataHorario:''},
+    {acao:'', dataHorario:''},
+    {acao:'', dataHorario:''},
+  ]}},
+  agendas:{titulo:'', mensagem:'', link:'', extra:{data:'', horario:'', local:''}},
+};
+// deep-ish clone so edits don't mutate the defaults object
+let informaValues=JSON.parse(JSON.stringify(informaDefaults));
+let selectedType='alerta';
+
+function currentType(){ return informaTypes.find(t=>t.key===selectedType); }
+function currentValues(){ return informaValues[selectedType]; }
+
+function onInfCommonInput(field, value){
+  currentValues()[field]=value;
+  renderInforma();
+}
+function onInfExtraInput(fieldId, value){
+  currentValues().extra[fieldId]=value;
+  renderInforma();
+}
+
+function renderTypePicker(){
+  const wrap=document.getElementById('typePicker');
+  wrap.innerHTML='';
+  informaTypes.forEach(t=>{
+    const chip=document.createElement('div');
+    chip.className='type-chip'+(t.key===selectedType?' active':'');
+    chip.style.color=t.color;
+    chip.innerHTML=`<span>${t.icon}</span><span class="lbl">${t.label}</span>`;
+    chip.onclick=()=>{ selectedType=t.key; renderTypePicker(); syncInfFormFromState(); renderInforma(); };
+    wrap.appendChild(chip);
+  });
+}
+
+function syncInfFormFromState(){
+  const v=currentValues();
+  document.getElementById('infTitulo').value=v.titulo;
+  document.getElementById('infMsg').value=v.mensagem;
+  document.getElementById('infLink').value=v.link;
+  renderExtraFields();
+}
+
+function renderExtraFields(){
+  const type=currentType();
+  const v=currentValues();
+  const wrap=document.getElementById('infExtraFields');
+  wrap.innerHTML='';
+  type.fields.forEach(f=>{
+    const label=document.createElement('label');
+    label.textContent=f.label+' (opcional)';
+    wrap.appendChild(label);
+
+    if(f.kind==='action-date-list'){
+      const rows=v.extra.acoes;
+      const listWrap=document.createElement('div');
+      listWrap.className='acoes-list';
+      rows.forEach((row,idx)=>{
+        const rowDiv=document.createElement('div');
+        rowDiv.className='acao-row';
+        const acaoInput=document.createElement('input');
+        acaoInput.type='text'; acaoInput.placeholder='Ação (ex: Foto Forecast)';
+        acaoInput.value=row.acao;
+        acaoInput.oninput=()=>{ row.acao=acaoInput.value; renderInforma(); };
+        const dataInput=document.createElement('input');
+        dataInput.type='text'; dataInput.placeholder='Data/Horário (ex: 05/09 às 12h)';
+        dataInput.value=row.dataHorario;
+        dataInput.oninput=()=>{ row.dataHorario=dataInput.value; renderInforma(); };
+        rowDiv.appendChild(acaoInput);
+        rowDiv.appendChild(dataInput);
+        if(rows.length>3){
+          const rmBtn=document.createElement('button');
+          rmBtn.type='button'; rmBtn.className='acao-remove'; rmBtn.textContent='✕';
+          rmBtn.onclick=()=>{ rows.splice(idx,1); renderExtraFields(); renderInforma(); };
+          rowDiv.appendChild(rmBtn);
+        }
+        listWrap.appendChild(rowDiv);
+      });
+      wrap.appendChild(listWrap);
+      const addBtn=document.createElement('button');
+      addBtn.type='button'; addBtn.className='btn ghost'; addBtn.style.marginTop='8px';
+      addBtn.textContent='+ Adicionar ação';
+      addBtn.onclick=()=>{ rows.push({acao:'',dataHorario:''}); renderExtraFields(); renderInforma(); };
+      wrap.appendChild(addBtn);
+    } else if(f.kind==='select-add'){
+      const select=document.createElement('select');
+      fechamentoAcoes.forEach(op=>{
+        const opt=document.createElement('option');
+        opt.value=op; opt.textContent=op;
+        if((v.extra[f.id]||'')===op) opt.selected=true;
+        select.appendChild(opt);
+      });
+      const optNew=document.createElement('option');
+      optNew.value='__nova__'; optNew.textContent='+ Nova ação...';
+      select.appendChild(optNew);
+      select.onchange=()=>{
+        if(select.value==='__nova__'){
+          const nome=(prompt('Nome da nova ação:')||'').trim();
+          if(nome){
+            if(!fechamentoAcoes.includes(nome)) fechamentoAcoes.push(nome);
+            onInfExtraInput(f.id, nome);
+            renderExtraFields();
+          } else {
+            select.value=v.extra[f.id]||fechamentoAcoes[0];
+          }
+        } else {
+          onInfExtraInput(f.id, select.value);
+        }
+      };
+      wrap.appendChild(select);
+    } else {
+      const input=document.createElement('input');
+      input.type='text';
+      input.value=v.extra[f.id]||'';
+      input.oninput=()=>onInfExtraInput(f.id, input.value);
+      wrap.appendChild(input);
+    }
+  });
+}
+
+function mdBold(s){
+  return escapeHtml(s||'').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+}
+
+function parseInformaBody(raw){
+  if(!raw) return '';
+  return raw.split('\n\n').map(block=>{
+    const t = block.trim();
+    if(!t) return '';
+    const lines = t.split('\n');
+    let out='', listItems=[], textLines=[];
+    function flushText(){
+      if(textLines.length){
+        out += `<p style="margin:0 0 10px;">${mdBold(textLines.join(' ').trim())}</p>`;
+        textLines=[];
+      }
+    }
+    function flushList(){
+      if(listItems.length){
+        out += `<ul style="margin:0 0 10px;padding-left:20px;">${listItems.join('')}</ul>`;
+        listItems=[];
+      }
+    }
+    lines.forEach(line=>{
+      if(line.trim().startsWith('-')){
+        flushText();
+        listItems.push(`<li style="margin-bottom:3px;">${mdBold(line.replace(/^-\s*/,''))}</li>`);
+      } else {
+        flushList();
+        textLines.push(line);
+      }
+    });
+    flushText(); flushList();
+    return out;
+  }).join('');
+}
+
+function getExtraLines(type, v){
+  const lines=[];
+  type.fields.forEach(f=>{
+    if(f.kind==='action-date-list'){
+      (v.extra.acoes||[]).forEach(row=>{
+        if(row.acao || row.dataHorario){
+          lines.push({label: row.acao || 'Ação', value: row.dataHorario || ''});
+        }
+      });
+    } else if(v.extra[f.id]){
+      lines.push({label:f.label, value:v.extra[f.id]});
+    }
+  });
+  return lines;
+}
+
+function buildChatTextInforma(){
+  const type=currentType();
+  const v=currentValues();
+  const parts=[`**${v.titulo}**`, v.mensagem];
+  getExtraLines(type, v).forEach(l=>parts.push(`${l.label}: ${l.value}`));
+  if(v.link) parts.push(`🔗 Mais detalhes: ${v.link}`);
+  return parts.filter(Boolean).join('\n').trim();
+}
+
+function buildChatHtmlInforma(){
+  const type=currentType();
+  const v=currentValues();
+  const extraLines=getExtraLines(type, v)
+    .map(l=>`<div style="font-size:13px;color:#444;margin-bottom:2px;">${escapeHtml(l.label)}: ${escapeHtml(l.value)}</div>`)
+    .join('');
+  const linkLine=v.link ? `<div style="font-size:13.5px;margin-top:6px;">🔗 Mais detalhes: <a href="${v.link}">${v.link}</a></div>` : '';
+  return `<div style="font-family:Arial,Helvetica,sans-serif;">
+    <div style="font-size:18px;font-weight:800;color:#1a3d5c;margin-bottom:6px;">${escapeHtml(v.titulo)}</div>
+    <div style="font-size:14px;color:#333;line-height:1.5;margin-bottom:8px;">${parseInformaBody(v.mensagem)}</div>
+    ${extraLines}
+    ${linkLine}
+  </div>`;
+}
+
+function buildEmailHtmlInforma(){
+  const type=currentType();
+  const v=currentValues();
+  const banner=document.getElementById('bannerUrlInforma').value;
+  const extraRows=getExtraLines(type, v)
+    .map(l=>`<tr><td style="padding:2px 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#444;"><strong>${escapeHtml(l.label)}:</strong> ${escapeHtml(l.value)}</td></tr>`)
+    .join('');
+  const linkBtn = v.link ? `<tr><td style="padding-top:14px;">
+      <a href="${v.link}" style="display:inline-block;border:1px solid #2cbfad;color:#1a8f7f;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;padding:7px 16px;border-radius:3px;text-decoration:none;">MAIS DETALHES</a>
+    </td></tr>` : '';
+
+  return `
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f2f2f2;">
+    <tr><td align="center" style="padding:24px 12px;">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;max-width:600px;">
+        <tr><td>
+          <img src="${banner}" width="600" style="display:block;width:100%;max-width:600px;height:auto;" alt="ICM Informa" />
+        </td></tr>
+        <tr><td style="background:${type.color};padding:10px 24px;">
+          <span style="font-family:Arial,Helvetica,sans-serif;color:#ffffff;font-size:13px;font-weight:bold;letter-spacing:.03em;">${type.icon} ${escapeHtml(type.label.toUpperCase())}</span>
+        </td></tr>
+        <tr><td style="padding:22px 24px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr><td style="font-family:Arial,Helvetica,sans-serif;color:#1a3d5c;font-size:18px;font-weight:bold;padding-bottom:8px;">${escapeHtml(v.titulo)}</td></tr>
+            <tr><td style="font-family:Arial,Helvetica,sans-serif;color:#444444;font-size:14px;line-height:1.5;padding-bottom:10px;">${parseInformaBody(v.mensagem)}</td></tr>
+            ${extraRows}
+            ${linkBtn}
+          </table>
+        </td></tr>
+        <tr><td style="background:#1a3d5c;padding:14px 24px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+            <td style="font-family:Arial,Helvetica,sans-serif;color:#cfe7e7;font-size:11px;">Tudo que você precisa em um só lugar! Acesse o Portal ICM.</td>
+            <td align="right" style="font-family:Arial,Helvetica,sans-serif;color:#7fe0d4;font-size:11px;white-space:nowrap;">icm.mv.com.br</td>
+          </tr></table>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>`;
+}
+
+function renderInforma(){
+  const type=currentType();
+  document.getElementById('emailPreviewInforma').innerHTML = buildEmailHtmlInforma();
+  document.getElementById('chatPreviewInforma').innerHTML = buildChatHtmlInforma();
+  document.getElementById('bannerThumbInforma').src = document.getElementById('bannerUrlInforma').value;
+  const btn=document.getElementById('btnOpenThemeImg');
+  btn.onclick=()=>window.open(type.img,'_blank');
+}
+
+
+/* ---------- ANIVERSÁRIO (réplica fiel do v1) ---------- */
+const ANIV_ASSINATURA_SRC = "data:image/png;base64,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";
+const ANIV_LOGO_MV_SRC = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAkACQAAD/4REoRXhpZgAATU0AKgAAAAgABAE7AAIAAAAfAAAISodpAAQAAAABAAAIapydAAEAAAA+AAAQ4uocAAcAAAgMAAAAPgAAAAAc6gAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEp1bGlhbmEgQnJpdHRvIGRlIEF6ZXZlZG8gTWFpYQAAAAWQAwACAAAAFAAAELiQBAACAAAAFAAAEMySkQACAAAAAzMwAACSkgACAAAAAzMwAADqHAAHAAAIDAAACKwAAAAAHOoAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyMDIzOjA3OjI0IDEwOjM2OjExADIwMjM6MDc6MjQgMTA6MzY6MTEAAABKAHUAbABpAGEAbgBhACAAQgByAGkAdAB0AG8AIABkAGUAIABBAHoAZQB2AGUAZABvACAATQBhAGkAYQAAAP/hCzFodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvADw/eHBhY2tldCBiZWdpbj0n77u/JyBpZD0nVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkJz8+DQo8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIj48cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPjxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSJ1dWlkOmZhZjViZGQ1LWJhM2QtMTFkYS1hZDMxLWQzM2Q3NTE4MmYxYiIgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIi8+PHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9InV1aWQ6ZmFmNWJkZDUtYmEzZC0xMWRhLWFkMzEtZDMzZDc1MTgyZjFiIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iPjx4bXA6Q3JlYXRlRGF0ZT4yMDIzLTA3LTI0VDEwOjM2OjExLjMwMjwveG1wOkNyZWF0ZURhdGU+PC9yZGY6RGVzY3JpcHRpb24+PHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9InV1aWQ6ZmFmNWJkZDUtYmEzZC0xMWRhLWFkMzEtZDMzZDc1MTgyZjFiIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iPjxkYzpjcmVhdG9yPjxyZGY6U2VxIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+PHJkZjpsaT5KdWxpYW5hIEJyaXR0byBkZSBBemV2ZWRvIE1haWE8L3JkZjpsaT48L3JkZjpTZXE+DQoJCQk8L2RjOmNyZWF0b3I+PC9yZGY6RGVzY3JpcHRpb24+PC9yZGY6UkRGPjwveDp4bXBtZXRhPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg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";
+
+let anivData = {
+  nome: 'Elayne Barros',
+  cargo: 'Analista de Marketing',
+  diretor: 'Jeferson Sadocci',
+  cargoDiretor: 'Diretor Corporativo\nde Mercado e Cliente',
+  foto: '',
+};
+
+function handleAnivFoto(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { anivData.foto = e.target.result; renderAnivPreview(); };
+  reader.readAsDataURL(file);
+}
+
+function renderAnivPreview(){
+  const el = document.getElementById('aniv-card-render');
+  if(!el) return;
+  el.innerHTML = `
+    <svg style="position:absolute;top:-60px;left:-60px;width:280px;height:280px;z-index:0" viewBox="0 0 280 280" fill="none">
+      <circle cx="0" cy="0" r="260" fill="#2cbfad" opacity=".18"/>
+      <circle cx="0" cy="0" r="200" fill="#2cbfad" opacity=".18"/>
+      <circle cx="0" cy="0" r="140" fill="#2cbfad" opacity=".2"/>
+    </svg>
+    <svg style="position:absolute;top:0;right:0;width:260px;height:200px;z-index:0" viewBox="0 0 260 200" fill="none">
+      <polygon points="100,0 260,0 260,200" fill="#e8f7f5" opacity=".8"/>
+      <polygon points="140,0 260,0 260,140" fill="#c8ede8" opacity=".7"/>
+      <polygon points="180,0 260,0 260,80" fill="#2cbfad" opacity=".18"/>
+      <polygon points="200,0 260,0 200,40" fill="#2cbfad" opacity=".22"/>
+      <polygon points="230,0 260,0 260,40" fill="#2cbfad" opacity=".28"/>
+      <polygon points="220,0 260,0 260,20" fill="#2cbfad" opacity=".2"/>
+    </svg>
+
+    <div style="position:absolute;left:0;top:0;width:470px;height:506px;z-index:1;padding:34px 40px 32px 42px;display:flex;flex-direction:column;justify-content:space-between">
+      <div>
+        <div style="font-size:30px;font-weight:700;color:#1a3d5c;line-height:1.2;margin-bottom:18px">Parabéns<br>pelo seu dia!</div>
+        <div style="font-size:11.5px;color:#3a5570;line-height:1.75;text-align:justify">
+          <p style="margin-bottom:6px">Celebrar o seu aniversário é, para todos nós, motivo de grande alegria, ficamos muito felizes por fazermos parte da sua história. Mais do que uma data no calendário, este dia marca a presença de alguém que faz a diferença em nosso time todos os dias.</p>
+          <p style="margin-bottom:6px">Agradecemos por sua dedicação e por escolher compartilhar sua jornada conosco. Neste novo ano de vida. Que este novo ciclo seja repleto de conquistas, saúde e de momentos que tragam orgulho tanto na vida pessoal quanto na profissional.</p>
+          <p style="margin-bottom:6px">Desejamos que o seu dia seja especial e sua nova fase brilhante!</p>
+          <p>Sucesso e muitas felicidades!</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between">
+        <div>
+          <img src="${ANIV_ASSINATURA_SRC}" style="height:70px;width:auto;display:block;margin-bottom:0;margin-top:4px;mix-blend-mode:multiply;opacity:.85">
+          <div style="width:120px;height:1px;background:#2cbfad;margin-bottom:6px"></div>
+          <div style="font-size:11px;font-weight:700;color:#1a3d5c;line-height:1.3">${escapeHtml(anivData.diretor)}</div>
+          <div style="font-size:10px;color:#5a7888;line-height:1.4;white-space:pre-line">${escapeHtml(anivData.cargoDiretor)}</div>
+        </div>
+        <div style="flex-shrink:0;margin-left:12px">
+          <img src="${ANIV_LOGO_MV_SRC}" style="height:38px;width:auto;display:block">
+        </div>
+      </div>
+    </div>
+
+    <div style="position:absolute;right:0;top:0;width:430px;height:506px;z-index:1;overflow:hidden">
+      ${anivData.foto
+        ? `<div style="width:100%;height:100%;background-image:url('${anivData.foto}');background-size:cover;background-position:center top;display:block"></div>`
+        : `<div style="width:100%;height:100%;background:linear-gradient(135deg,#e8f9f6,#c4efe9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px">
+             <span style="font-size:12px;color:#2cbfad;opacity:.7;font-weight:600">Adicione a foto</span>
+           </div>`
+      }
+      <div style="position:absolute;bottom:0;left:0;right:0;background:#1a3d5c;padding:10px 18px">
+        <div style="font-size:14px;font-weight:700;color:#fff;line-height:1.2">${escapeHtml(anivData.nome)||'Nome do Aniversariante'}</div>
+        <div style="font-size:11px;color:#2cbfad;margin-top:2px">${escapeHtml(anivData.cargo)||'Cargo'}</div>
+      </div>
+    </div>`;
+}
+
+function downloadAnivCard(){
+  const card = document.getElementById('aniv-card-render');
+  if(!card || typeof html2canvas === 'undefined'){ showToast('html2canvas não carregou — verifique a conexão.'); return; }
+  html2canvas(card, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 900, height: 506 }).then(canvas => {
+    const nome = (anivData.nome||'aniversario').replace(/\s+/g,'_').toLowerCase();
+    const a = document.createElement('a');
+    a.download = 'aniversario_' + nome + '.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  }).catch(err=>{
+    console.error(err);
+    showToast('Erro ao gerar imagem.');
+  });
+}
+
+/* ---------- RASCUNHO — GOOGLE SHEETS (ICM News) ---------- */
+let _newsDraftTimer = null;
+let _newsAutoSaveInterval = parseInt(localStorage.getItem('icmnewsv2_autosave_interval') || '5', 10) * 1000;
+
+function getNewsSheetsURL(){
+  return localStorage.getItem('icmnewsv2_sheets_url') || '';
+}
+
+function setNewsDraftStatus(msg, cls){
+  const el = document.getElementById('news-draft-status');
+  if(!el) return;
+  el.textContent = msg;
+  el.className = 'draft-status' + (cls ? ' '+cls : '');
+}
+
+function getNewsState(){
+  return {
+    edition: document.getElementById('edition').value,
+    bannerUrl: document.getElementById('bannerUrl').value,
+    chatIntro: document.getElementById('chatIntro').value,
+    whatsIntro: document.getElementById('whatsIntro').value,
+    items: newsItems,
+  };
+}
+
+function applyNewsState(data){
+  document.getElementById('edition').value = data.edition || '';
+  document.getElementById('bannerUrl').value = data.bannerUrl || '';
+  document.getElementById('chatIntro').value = data.chatIntro || '';
+  document.getElementById('whatsIntro').value = data.whatsIntro || '';
+  newsItems = data.items || [];
+  renderItemsForm();
+  renderNews();
+}
+
+async function saveNewsDraft(manual){
+  const url = getNewsSheetsURL();
+  if(!url){
+    if(manual) openNewsConfig();
+    return;
+  }
+  setNewsDraftStatus('Salvando…', 'saving');
+  try{
+    const resp = await fetch(url, {method:'POST', cache:'no-store', body: JSON.stringify({action:'save', data:getNewsState()})});
+    const json = await resp.json();
+    if(json.ok){
+      setNewsDraftStatus('Rascunho salvo ✓', 'saved');
+      setTimeout(()=>setNewsDraftStatus(''), 4000);
+    } else {
+      setNewsDraftStatus('Erro ao salvar', 'error');
+    }
+  } catch(e){
+    setNewsDraftStatus('Erro de conexão', 'error');
+    console.error('saveNewsDraft:', e);
+  }
+}
+
+async function loadNewsDraft(){
+  const url = getNewsSheetsURL();
+  if(!url){ openNewsConfig(); return; }
+  setNewsDraftStatus('Carregando…', 'saving');
+  try{
+    const resp = await fetch(url + '?action=load&_=' + Date.now(), {cache:'no-store'});
+    const json = await resp.json();
+    if(json.ok && json.data){
+      applyNewsState(json.data);
+      setNewsDraftStatus('Rascunho carregado ✓', 'saved');
+      setTimeout(()=>setNewsDraftStatus(''), 4000);
+    } else if(json.ok && !json.data){
+      setNewsDraftStatus('Nenhum rascunho ainda', '');
+      setTimeout(()=>setNewsDraftStatus(''), 3000);
+    } else {
+      setNewsDraftStatus('Erro ao carregar', 'error');
+    }
+  } catch(e){
+    setNewsDraftStatus('Erro de conexão', 'error');
+    console.error('loadNewsDraft:', e);
+  }
+}
+
+function scheduleNewsAutoSave(){
+  if(!getNewsSheetsURL()) return;
+  clearTimeout(_newsDraftTimer);
+  setNewsDraftStatus('Alterações pendentes…', '');
+  _newsDraftTimer = setTimeout(()=>saveNewsDraft(false), _newsAutoSaveInterval);
+}
+
+function openNewsConfig(){
+  document.getElementById('cfg-url').value = getNewsSheetsURL();
+  document.getElementById('cfg-interval').value = parseInt(localStorage.getItem('icmnewsv2_autosave_interval') || '5', 10);
+  const status = document.getElementById('cfg-url-status');
+  const url = getNewsSheetsURL();
+  status.textContent = url ? '✓ URL configurada' : '';
+  status.style.color = url ? '#1a8f7f' : '#8a9598';
+  document.getElementById('cfg-overlay').style.display = 'block';
+  document.getElementById('cfg-modal').style.display = 'block';
+}
+
+function closeNewsConfig(){
+  document.getElementById('cfg-overlay').style.display = 'none';
+  document.getElementById('cfg-modal').style.display = 'none';
+}
+
+function saveNewsConfig(){
+  const url = document.getElementById('cfg-url').value.trim();
+  const interval = Math.max(5, parseInt(document.getElementById('cfg-interval').value, 10) || 5);
+  const status = document.getElementById('cfg-url-status');
+  if(url && !url.startsWith('https://script.google.com/macros/')){
+    status.textContent = '⚠ URL inválida — deve começar com https://script.google.com/macros/';
+    status.style.color = '#d8483f';
+    return;
+  }
+  localStorage.setItem('icmnewsv2_sheets_url', url);
+  localStorage.setItem('icmnewsv2_autosave_interval', String(interval));
+  _newsAutoSaveInterval = interval * 1000;
+  status.textContent = url ? '✓ URL salva!' : '';
+  status.style.color = '#1a8f7f';
+  setTimeout(closeNewsConfig, 800);
+}
+
+/* ---------- init ---------- */
+renderItemsForm();
+renderNews();
+renderTypePicker();
+syncInfFormFromState();
+renderInforma();
+renderAnivPreview();
+</script>
+</body>
+</html>
