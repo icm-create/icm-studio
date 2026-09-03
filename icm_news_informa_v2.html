@@ -633,6 +633,17 @@ Reunimos os principais alinhamentos, atualizações e novidades que impactam nos
         </div>
         <div class="hint" style="margin-top:10px;">Poste o texto copiado junto com a imagem do tema — ela substitui o aviso textual de gravidade.</div>
       </div>
+
+      <div class="card">
+        <h2>Texto para postar no WhatsApp</h2>
+        <div class="divider-label">Prévia</div>
+        <pre class="chattext" id="chatPreviewInformaWhats"></pre>
+        <div class="row-actions">
+          <button class="btn solid" onclick="copyText('chatPreviewInformaWhats')">📋 Copiar texto</button>
+          <button class="btn ghost" id="btnOpenThemeImgWhats">🖼️ Abrir imagem do tema (p/ anexar)</button>
+        </div>
+        <div class="hint" style="margin-top:10px;">Mesma lógica do chat, sem o tipo em texto — anexe a imagem do tema junto.</div>
+      </div>
     </div>
   </div>
 </main>
@@ -831,14 +842,13 @@ function buildChatTextNews(){
 function buildChatHtmlNews(){
   const intro=document.getElementById('chatIntro').value;
   const blocks=newsItems.map(item=>`
-    <div style="margin-bottom:16px;">
-      <div style="font-size:17px;font-weight:800;color:#1a3d5c;margin-bottom:4px;">${item.icon} ${escapeHtml(item.title)}</div>
-      <div style="font-size:14px;color:#333;line-height:1.5;margin-bottom:6px;">${escapeHtml(item.summary)}</div>
-      <div style="font-size:13.5px;">👉 Leia mais: <a href="${item.link}">${item.link}</a></div>
-    </div>`).join('');
+    <div><strong style="font-size:17px;color:#1a3d5c;">${item.icon} ${escapeHtml(item.title)}</strong></div>
+    <div style="font-size:14px;color:#333;line-height:1.5;">${escapeHtml(item.summary)}</div>
+    <div style="font-size:13.5px;">👉 Leia mais: <a href="${item.link}">${item.link}</a></div>
+    <div>&nbsp;</div>`).join('');
   return `<div style="font-family:Arial,Helvetica,sans-serif;">
-    <div style="font-size:23px;font-weight:800;color:#1a3d5c;margin-bottom:6px;">${escapeHtml(intro)}</div>
-    <div style="height:3px;width:64px;background:#2cbfad;margin:0 0 18px;"></div>
+    <div><strong style="font-size:23px;color:#1a3d5c;">${escapeHtml(intro)}</strong></div>
+    <div>&nbsp;</div>
     ${blocks}
   </div>`;
 }
@@ -1477,17 +1487,27 @@ function buildChatTextInforma(){
   return parts.filter(Boolean).join('\n').trim();
 }
 
+function buildChatTextInformaWhats(){
+  const type=currentType();
+  const v=currentValues();
+  const parts=[`*${v.titulo}*`, v.mensagem];
+  getExtraLines(type, v).forEach(l=>parts.push(`${l.label}: ${l.value}`));
+  if(v.link) parts.push(`🔗 Mais detalhes: ${v.link}`);
+  return parts.filter(Boolean).join('\n').trim();
+}
+
 function buildChatHtmlInforma(){
   const type=currentType();
   const v=currentValues();
   const extraLines=getExtraLines(type, v)
-    .map(l=>`<div style="font-size:13px;color:#444;margin-bottom:2px;">${escapeHtml(l.label)}: ${escapeHtml(l.value)}</div>`)
+    .map(l=>`<div style="font-size:13px;color:#444;">${escapeHtml(l.label)}: ${escapeHtml(l.value)}</div>`)
     .join('');
-  const linkLine=v.link ? `<div style="font-size:13.5px;margin-top:6px;">🔗 Mais detalhes: <a href="${v.link}">${v.link}</a></div>` : '';
+  const linkLine=v.link ? `<div>&nbsp;</div><div style="font-size:13.5px;">🔗 Mais detalhes: <a href="${v.link}">${v.link}</a></div>` : '';
   return `<div style="font-family:Arial,Helvetica,sans-serif;">
-    <div style="font-size:18px;font-weight:800;color:#1a3d5c;margin-bottom:6px;">${escapeHtml(v.titulo)}</div>
-    <div style="font-size:14px;color:#333;line-height:1.5;margin-bottom:8px;">${parseInformaBody(v.mensagem)}</div>
-    ${extraLines}
+    <div><strong style="font-size:18px;color:#1a3d5c;">${escapeHtml(v.titulo)}</strong></div>
+    <div>&nbsp;</div>
+    <div style="font-size:14px;color:#333;line-height:1.5;">${parseInformaBody(v.mensagem)}</div>
+    ${extraLines ? '<div>&nbsp;</div>' + extraLines : ''}
     ${linkLine}
   </div>`;
 }
@@ -1536,9 +1556,12 @@ function renderInforma(){
   const type=currentType();
   document.getElementById('emailPreviewInforma').innerHTML = buildEmailHtmlInforma();
   document.getElementById('chatPreviewInforma').innerHTML = buildChatHtmlInforma();
+  document.getElementById('chatPreviewInformaWhats').textContent = buildChatTextInformaWhats();
   document.getElementById('bannerThumbInforma').src = document.getElementById('bannerUrlInforma').value;
   const btn=document.getElementById('btnOpenThemeImg');
   btn.onclick=()=>window.open(type.img,'_blank');
+  const btnWhats=document.getElementById('btnOpenThemeImgWhats');
+  if(btnWhats) btnWhats.onclick=()=>window.open(type.img,'_blank');
 }
 
 
@@ -1764,3 +1787,4 @@ renderAnivPreview();
 </script>
 </body>
 </html>
+
