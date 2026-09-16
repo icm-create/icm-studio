@@ -551,6 +551,18 @@ Reunimos os principais alinhamentos, atualizações e novidades que impactam nos
         <div id="npPagesWrap"></div>
         <div class="row-actions"><button class="btn ghost" onclick="addNpPage()">+ Adicionar página</button></div>
       </div>
+
+      <div class="card">
+        <h2>Sincronizar com o ICM News</h2>
+        <div class="hint">Preenchendo o PDF, você não precisa montar os resumos de novo à mão — gere-os automaticamente a partir das páginas internas.</div>
+        <label class="first">Link do PDF publicado (opcional)</label>
+        <input type="text" id="npPdfUrl" placeholder="https://..." value="">
+        <div class="hint">Enquanto não existir uma página web por notícia, esse link é usado em todas as notícias geradas — aponta pro PDF inteiro.</div>
+        <div class="row-actions">
+          <button class="btn solid" onclick="syncPdfToNewsItems()">🔄 Usar estas páginas como resumos do ICM News</button>
+        </div>
+        <div class="hint" style="margin-top:8px;">Isso substitui a lista de notícias que já está na aba ICM News pelas páginas montadas aqui (título + destaque/início do texto como resumo).</div>
+      </div>
     </div>
 
     <!-- PREVIEW -->
@@ -1078,13 +1090,16 @@ function renderNpPages(){
 /* --- prévia --- */
 function npSectionHtml(sec){
   const itemsHtml = sec.items.filter(it=>it.title||it.desc).map(it=>`
-    <div style="margin-bottom:8px;">
-      <div style="font-weight:700;color:#222;font-size:13.5px;">${escapeHtml(it.title)}</div>
-      <div style="color:#555;font-size:12.5px;">${escapeHtml(it.desc)}</div>
+    <div style="display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-bottom:1px solid #f0f0f0;">
+      <span style="flex-shrink:0; width:7px; height:7px; border-radius:50%; background:${sec.color}; margin-top:6px;"></span>
+      <div>
+        <div style="font-weight:700;color:#222;font-size:13.5px;margin-bottom:3px;">${escapeHtml(it.title)}</div>
+        <div style="color:#555;font-size:12.5px;line-height:1.5;">${escapeHtml(it.desc)}</div>
+      </div>
     </div>`).join('');
   return `
     <div class="pdf-cover-sec">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
         <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:${sec.color};font-size:14px;">${sec.icon}</span>
         <span style="font-weight:700;color:${sec.color};font-size:14px;">${escapeHtml(sec.name)}</span>
       </div>
@@ -1092,40 +1107,103 @@ function npSectionHtml(sec){
     </div>`;
 }
 
-function npPageHtml(pg){
-  const bodyHtml = `<div style="font-size:13.5px;color:#333;line-height:1.6;">${parseInformaBody(pg.body)}</div>`;
-  const imgTag = pg.imageSrc ? `<img src="${pg.imageSrc}" style="width:100%;display:block;border-radius:6px;object-fit:cover;">` : '';
-  let mediaBlock;
-  if(pg.imagePos==='full' && pg.imageSrc){
-    mediaBlock = `<div style="margin-bottom:16px;">${imgTag}</div>${bodyHtml}`;
-  } else if(pg.imagePos==='bottom' && pg.imageSrc){
-    mediaBlock = `${bodyHtml}<div style="margin-top:16px;">${imgTag}</div>`;
-  } else if((pg.imagePos==='left'||pg.imagePos==='right') && pg.imageSrc){
-    const imgCell = `<td width="230" valign="top" style="padding:${pg.imagePos==='left'?'0 20px 0 0':'0 0 0 20px'}">${imgTag}</td>`;
-    const textCell = `<td valign="top">${bodyHtml}</td>`;
-    mediaBlock = `<table width="100%" cellpadding="0" cellspacing="0"><tr>${pg.imagePos==='left'?imgCell+textCell:textCell+imgCell}</tr></table>`;
-  } else {
-    mediaBlock = bodyHtml;
+function measureHtml(html, width){
+  width = width || 720;
+  let m = document.getElementById('pdf-measurer');
+  if(!m){
+    m = document.createElement('div');
+    m.id = 'pdf-measurer';
+    m.style.position = 'absolute';
+    m.style.left = '-9999px';
+    m.style.top = '0';
+    m.style.visibility = 'hidden';
+    document.body.appendChild(m);
   }
-  const content = `
-    <div class="pdf-page-body">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:7px;background:${pg.color};font-size:15px;">${pg.icon}</span>
-        <span style="font-size:11px;font-weight:700;letter-spacing:.04em;color:${pg.color};text-transform:uppercase;">${escapeHtml(pg.category)}</span>
-      </div>
-      <div style="font-size:22px;font-weight:800;color:#1a3d5c;margin-bottom:4px;">${escapeHtml(pg.title)}</div>
-      ${pg.highlight ? `<div style="font-size:14px;font-style:italic;color:#0e8a8a;margin-bottom:14px;">${escapeHtml(pg.highlight)}</div>` : ''}
-      ${mediaBlock}
-    </div>`;
+  m.style.width = width + 'px';
+  m.innerHTML = html;
+  return m.offsetHeight;
+}
+
+function npImgTag(pg){
+  return pg.imageSrc ? `<img src="${pg.imageSrc}" style="width:100%;display:block;border-radius:6px;object-fit:cover;">` : '';
+}
+
+function npHeaderFullHtml(pg){
+  return `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:7px;background:${pg.color};font-size:15px;">${pg.icon}</span>
+      <span style="font-size:11px;font-weight:700;letter-spacing:.04em;color:${pg.color};text-transform:uppercase;">${escapeHtml(pg.category)}</span>
+    </div>
+    <div style="font-size:22px;font-weight:800;color:#1a3d5c;margin-bottom:4px;">${escapeHtml(pg.title)}</div>
+    ${pg.highlight ? `<div style="font-size:14px;font-style:italic;color:#0e8a8a;margin-bottom:14px;">${escapeHtml(pg.highlight)}</div>` : ''}`;
+}
+
+function npHeaderContHtml(pg){
+  return `<div style="font-size:11px;color:#999;font-style:italic;margin-bottom:14px;">Continuação — ${escapeHtml(pg.title)}</div>`;
+}
+
+function npFooterHtml(pg){
   const footerImg = pg.footerImageSrc ? `<img src="${pg.footerImageSrc}" style="height:32px;width:auto;display:block;">` : '';
-  const footer = `
+  return `
     <div style="padding:16px 34px;border-top:1px solid #eee;display:flex;align-items:center;justify-content:space-between;gap:14px;">
       <div style="font-size:11.5px;font-style:italic;color:#667;">
         ${escapeHtml(pg.footerText)}${pg.footerEmail ? ` — <span style="color:#0e8a8a;">${escapeHtml(pg.footerEmail)}</span>` : ''}
       </div>
       ${footerImg}
     </div>`;
-  return content + footer;
+}
+
+function npBlocksForBody(pg){
+  const blocks = parseInformaBodyBlocks(pg.body);
+  if(pg.imageSrc && pg.imagePos==='full') blocks.unshift(`<div style="margin-bottom:16px;">${npImgTag(pg)}</div>`);
+  if(pg.imageSrc && pg.imagePos==='bottom') blocks.push(`<div style="margin-top:16px;">${npImgTag(pg)}</div>`);
+  return blocks;
+}
+
+// Monta as páginas físicas (.pdf-page) de UM artigo, quebrando automaticamente
+// para páginas de continuação quando o conteúdo não cabe na altura da folha.
+function npArticlePages(pg){
+  const PAGE_H = 1018;
+  const footerHtml = npFooterHtml(pg);
+  const footerH = measureHtml(footerHtml, 720);
+  const budget = PAGE_H - footerH - 6; // pequena folga de segurança
+
+  const blocks = npBlocksForBody(pg);
+  const useSideImage = pg.imageSrc && (pg.imagePos==='left' || pg.imagePos==='right');
+
+  function wrapBody(headerHtml, blocksHtml, isFirst){
+    if(isFirst && useSideImage){
+      const imgCell = `<td width="230" valign="top" style="padding:${pg.imagePos==='left'?'0 20px 0 0':'0 0 0 20px'}">${npImgTag(pg)}</td>`;
+      const textCell = `<td valign="top"><div style="font-size:13.5px;color:#333;line-height:1.6;">${blocksHtml}</div></td>`;
+      const table = `<table width="100%" cellpadding="0" cellspacing="0"><tr>${pg.imagePos==='left'?imgCell+textCell:textCell+imgCell}</tr></table>`;
+      return `<div class="pdf-page-body">${headerHtml}${table}</div>`;
+    }
+    const bodyDiv = blocksHtml ? `<div style="font-size:13.5px;color:#333;line-height:1.6;">${blocksHtml}</div>` : '';
+    return `<div class="pdf-page-body">${headerHtml}${bodyDiv}</div>`;
+  }
+
+  const pages = [];
+  let idx = 0;
+  let isFirst = true;
+  do {
+    const headerHtml = isFirst ? npHeaderFullHtml(pg) : npHeaderContHtml(pg);
+    let acc = [];
+    while(idx < blocks.length){
+      const candidateHtml = wrapBody(headerHtml, acc.concat(blocks[idx]).join(''), isFirst);
+      const h = measureHtml(candidateHtml, 720);
+      if(h <= budget || acc.length===0){
+        acc.push(blocks[idx]);
+        idx++;
+      } else break;
+    }
+    pages.push({ bodyHtml: wrapBody(headerHtml, acc.join(''), isFirst) });
+    isFirst = false;
+  } while(idx < blocks.length);
+
+  return pages.map((p, i) => {
+    const isLast = i === pages.length - 1;
+    return `<div class="pdf-page" data-page="inner">${p.bodyHtml}${isLast ? footerHtml : ''}</div>`;
+  }).join('');
 }
 
 function buildNewsPdfBody(){
@@ -1147,7 +1225,7 @@ function buildNewsPdfBody(){
         <span style="color:#3ad6d6;font-size:11px;white-space:nowrap;">icm.mv.com.br</span>
       </div>
     </div>`;
-  const pages = newsPdfData.pages.map(pg => `<div class="pdf-page" data-page="inner">${npPageHtml(pg)}</div>`).join('');
+  const pages = newsPdfData.pages.map(pg => npArticlePages(pg)).join('');
   return cover + pages;
 }
 
@@ -1241,6 +1319,29 @@ function scheduleNewsPdfAutoSave(){
   const el = document.getElementById('newspdf-draft-status');
   if(el){ el.textContent = 'Alterações pendentes…'; el.className='draft-status'; }
   _newsPdfDraftTimer = setTimeout(()=>saveNewsPdfDraft(false), _newsAutoSaveInterval);
+}
+
+function plainTextFromBody(raw){
+  return (raw||'').split('\n\n')[0].replace(/\*\*(.+?)\*\*/g,'$1').replace(/^-\s*/,'').replace(/\n/g,' ').trim();
+}
+
+function syncPdfToNewsItems(){
+  if(!newsPdfData.pages.length){ showToast('Não há páginas internas pra sincronizar.'); return; }
+  const link = document.getElementById('npPdfUrl').value.trim();
+  newsItems = newsPdfData.pages.map(pg => ({
+    icon: pg.icon,
+    color: pg.color,
+    title: pg.title,
+    summary: pg.highlight ? pg.highlight : plainTextFromBody(pg.body).slice(0,160),
+    link: link,
+  }));
+  renderItemsForm();
+  renderNews();
+  showToast('Resumos do ICM News atualizados a partir das páginas do PDF!');
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+  document.querySelector('nav.tabs button[data-tab="news"]').classList.add('active');
+  document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
+  document.getElementById('tab-news').classList.add('active');
 }
 
 /* ---------- ICM INFORMA ---------- */
@@ -1429,8 +1530,8 @@ function mdBold(s){
   return escapeHtml(s||'').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 }
 
-function parseInformaBody(raw){
-  if(!raw) return '';
+function parseInformaBodyBlocks(raw){
+  if(!raw) return [];
   return raw.split('\n\n').map(block=>{
     const t = block.trim();
     if(!t) return '';
@@ -1459,7 +1560,11 @@ function parseInformaBody(raw){
     });
     flushText(); flushList();
     return out;
-  }).join('');
+  }).filter(Boolean);
+}
+
+function parseInformaBody(raw){
+  return parseInformaBodyBlocks(raw).join('');
 }
 
 function getExtraLines(type, v){
@@ -1787,4 +1892,3 @@ renderAnivPreview();
 </script>
 </body>
 </html>
-
