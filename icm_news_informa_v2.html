@@ -1201,7 +1201,7 @@ function npArticlePages(pg){
   const PAGE_H = 1018;
   const footerHtml = npFooterHtml(pg);
   const footerH = measureHtml(footerHtml, 720);
-  const budget = PAGE_H - footerH - 6; // pequena folga de segurança
+  const budget = PAGE_H - footerH - 44; // folga de segurança — mesmo respiro do rodapé mesmo quando ele não aparece na página
 
   const units = parseBodyUnits(pg.body).map(u => ({...u}));
   if(pg.imageSrc && pg.imagePos==='full') units.unshift({type:'img', html:`<div style="margin-bottom:16px;">${npImgTag(pg)}</div>`});
