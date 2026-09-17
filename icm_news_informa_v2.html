@@ -438,6 +438,13 @@
           <span class="draft-status" id="news-draft-status"></span>
         </div>
         <div class="hint">Salva sozinho a cada poucos segundos numa planilha do Google (mesma lógica do ICM Studio v1), assim como o rascunho não se perde se a aba fechar. Configure a URL do Apps Script uma vez em "Configurar".</div>
+        <div class="row-actions" style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px;">
+          <button class="btn solid" onclick="downloadNewsBackup()">⬇️ Baixar backup (arquivo)</button>
+          <label class="btn ghost" style="cursor:pointer;margin:0;">📂 Carregar backup (arquivo)
+            <input type="file" accept="application/json" style="display:none;" onchange="handleNewsBackupUpload(this)">
+          </label>
+        </div>
+        <div class="hint">Mais confiável que o rascunho na planilha: baixa um arquivo <code>.json</code> no seu computador com tudo que está preenchido. Guarde-o em algum lugar seguro e use "Carregar backup" pra voltar exatamente a este ponto, mesmo em outro navegador ou computador.</div>
       </div>
 
       <div class="card">
@@ -530,6 +537,13 @@ Reunimos os principais alinhamentos, atualizações e novidades que impactam nos
         </div>
         <div class="hint">Usa a mesma URL do Apps Script configurada no ICM News (é a mesma planilha, numa aba separada).</div>
         <div class="hint">⚠️ As imagens das páginas <strong>não</strong> entram no backup (o Google Sheets tem limite de tamanho por célula) — só o texto é salvo. Reanexe as imagens depois de carregar um rascunho.</div>
+        <div class="row-actions" style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px;">
+          <button class="btn solid" onclick="downloadNewsPdfBackup()">⬇️ Baixar backup (arquivo)</button>
+          <label class="btn ghost" style="cursor:pointer;margin:0;">📂 Carregar backup (arquivo)
+            <input type="file" accept="application/json" style="display:none;" onchange="handleNewsPdfBackupUpload(this)">
+          </label>
+        </div>
+        <div class="hint">Esse arquivo <strong>inclui as imagens</strong> (diferente do rascunho da planilha) — é o backup mais completo. Baixe antes de fechar o navegador.</div>
       </div>
 
       <div class="card">
@@ -554,14 +568,14 @@ Reunimos os principais alinhamentos, atualizações e novidades que impactam nos
 
       <div class="card">
         <h2>Sincronizar com o ICM News</h2>
-        <div class="hint">Preenchendo o PDF, você não precisa montar os resumos de novo à mão — gere-os automaticamente a partir das páginas internas.</div>
+        <div class="hint">✅ Automático: assim que você preenche o título de uma página aqui, os resumos da aba ICM News (e-mail/chat/WhatsApp) já são atualizados sozinhos a partir das páginas internas — não precisa fazer nada.</div>
         <label class="first">Link do PDF publicado (opcional)</label>
-        <input type="text" id="npPdfUrl" placeholder="https://..." value="">
+        <input type="text" id="npPdfUrl" placeholder="https://..." oninput="renderNewsPdfPreview()">
         <div class="hint">Enquanto não existir uma página web por notícia, esse link é usado em todas as notícias geradas — aponta pro PDF inteiro.</div>
         <div class="row-actions">
-          <button class="btn solid" onclick="syncPdfToNewsItems()">🔄 Usar estas páginas como resumos do ICM News</button>
+          <button class="btn ghost" onclick="syncPdfToNewsItems()">🔄 Ver agora na aba ICM News</button>
         </div>
-        <div class="hint" style="margin-top:8px;">Isso substitui a lista de notícias que já está na aba ICM News pelas páginas montadas aqui (título + destaque/início do texto como resumo).</div>
+        <div class="hint" style="margin-top:8px;">Esse botão é só um atalho pra já abrir na aba ICM News e conferir — a sincronização em si já aconteceu sozinha.</div>
       </div>
     </div>
 
@@ -1153,56 +1167,128 @@ function npFooterHtml(pg){
     </div>`;
 }
 
-function npBlocksForBody(pg){
-  const blocks = parseInformaBodyBlocks(pg.body);
-  if(pg.imageSrc && pg.imagePos==='full') blocks.unshift(`<div style="margin-bottom:16px;">${npImgTag(pg)}</div>`);
-  if(pg.imageSrc && pg.imagePos==='bottom') blocks.push(`<div style="margin-top:16px;">${npImgTag(pg)}</div>`);
-  return blocks;
+function parseBodyUnits(raw){
+  if(!raw) return [];
+  const units = [];
+  raw.split('\n\n').forEach(block=>{
+    const t = block.trim();
+    if(!t) return;
+    const lines = t.split('\n');
+    let textLines=[];
+    function flushText(){
+      if(textLines.length){ units.push({type:'p', raw: textLines.join(' ').trim()}); textLines=[]; }
+    }
+    lines.forEach(line=>{
+      if(line.trim().startsWith('-')){
+        flushText();
+        units.push({type:'li', raw: line.replace(/^-\s*/,'').trim()});
+      } else {
+        textLines.push(line);
+      }
+    });
+    flushText();
+  });
+  return units;
 }
 
+function npWrapP(text){ return `<p style="margin:0 0 10px;">${mdBold(text)}</p>`; }
+function npWrapLi(text){ return `<ul style="margin:0 0 10px;padding-left:20px;"><li style="margin-bottom:3px;">${mdBold(text)}</li></ul>`; }
+
 // Monta as páginas físicas (.pdf-page) de UM artigo, quebrando automaticamente
-// para páginas de continuação quando o conteúdo não cabe na altura da folha.
+// para páginas de continuação quando o conteúdo não cabe na altura da folha —
+// inclusive DENTRO de um parágrafo só, palavra por palavra, se precisar.
 function npArticlePages(pg){
   const PAGE_H = 1018;
   const footerHtml = npFooterHtml(pg);
   const footerH = measureHtml(footerHtml, 720);
   const budget = PAGE_H - footerH - 6; // pequena folga de segurança
 
-  const blocks = npBlocksForBody(pg);
+  const units = parseBodyUnits(pg.body).map(u => ({...u}));
+  if(pg.imageSrc && pg.imagePos==='full') units.unshift({type:'img', html:`<div style="margin-bottom:16px;">${npImgTag(pg)}</div>`});
+  if(pg.imageSrc && pg.imagePos==='bottom') units.push({type:'img', html:`<div style="margin-top:16px;">${npImgTag(pg)}</div>`});
+
   const useSideImage = pg.imageSrc && (pg.imagePos==='left' || pg.imagePos==='right');
 
-  function wrapBody(headerHtml, blocksHtml, isFirst){
-    if(isFirst && useSideImage){
+  function wrapPageBody(headerHtml, contentHtml, isFirstPage){
+    if(isFirstPage && useSideImage){
       const imgCell = `<td width="230" valign="top" style="padding:${pg.imagePos==='left'?'0 20px 0 0':'0 0 0 20px'}">${npImgTag(pg)}</td>`;
-      const textCell = `<td valign="top"><div style="font-size:13.5px;color:#333;line-height:1.6;">${blocksHtml}</div></td>`;
+      const textCell = `<td valign="top"><div style="font-size:13.5px;color:#333;line-height:1.6;">${contentHtml}</div></td>`;
       const table = `<table width="100%" cellpadding="0" cellspacing="0"><tr>${pg.imagePos==='left'?imgCell+textCell:textCell+imgCell}</tr></table>`;
       return `<div class="pdf-page-body">${headerHtml}${table}</div>`;
     }
-    const bodyDiv = blocksHtml ? `<div style="font-size:13.5px;color:#333;line-height:1.6;">${blocksHtml}</div>` : '';
+    const bodyDiv = contentHtml ? `<div style="font-size:13.5px;color:#333;line-height:1.6;">${contentHtml}</div>` : '';
     return `<div class="pdf-page-body">${headerHtml}${bodyDiv}</div>`;
   }
 
+  function fits(headerHtml, contentHtml, isFirstPage){
+    return measureHtml(wrapPageBody(headerHtml, contentHtml, isFirstPage), 720) <= budget;
+  }
+
   const pages = [];
-  let idx = 0;
   let isFirst = true;
+  let idx = 0;
+
   do {
     const headerHtml = isFirst ? npHeaderFullHtml(pg) : npHeaderContHtml(pg);
-    let acc = [];
-    while(idx < blocks.length){
-      const candidateHtml = wrapBody(headerHtml, acc.concat(blocks[idx]).join(''), isFirst);
-      const h = measureHtml(candidateHtml, 720);
-      if(h <= budget || acc.length===0){
-        acc.push(blocks[idx]);
-        idx++;
-      } else break;
-    }
-    pages.push({ bodyHtml: wrapBody(headerHtml, acc.join(''), isFirst) });
-    isFirst = false;
-  } while(idx < blocks.length);
+    let contentHtml = '';
+    let placedAny = false;
 
-  return pages.map((p, i) => {
-    const isLast = i === pages.length - 1;
-    return `<div class="pdf-page" data-page="inner">${p.bodyHtml}${isLast ? footerHtml : ''}</div>`;
+    while(idx < units.length){
+      const u = units[idx];
+
+      if(u.type === 'img'){
+        const candidate = contentHtml + u.html;
+        if(fits(headerHtml, candidate, isFirst) || !placedAny){ contentHtml = candidate; placedAny = true; idx++; }
+        else break;
+        continue;
+      }
+
+      if(u.type === 'li'){
+        const candidate = contentHtml + npWrapLi(u.raw);
+        if(fits(headerHtml, candidate, isFirst) || !placedAny){ contentHtml = candidate; placedAny = true; idx++; }
+        else break;
+        continue;
+      }
+
+      // type 'p' — tenta o parágrafo inteiro primeiro
+      const wholeCandidate = contentHtml + npWrapP(u.raw);
+      if(fits(headerHtml, wholeCandidate, isFirst)){
+        contentHtml = wholeCandidate; placedAny = true; idx++;
+        continue;
+      }
+
+      // não coube inteiro — busca binária por quantas palavras cabem
+      const words = u.raw.split(' ');
+      let lo=1, hi=words.length, best=0;
+      while(lo<=hi){
+        const mid=(lo+hi)>>1;
+        const partial = contentHtml + npWrapP(words.slice(0,mid).join(' '));
+        if(fits(headerHtml, partial, isFirst)){ best=mid; lo=mid+1; } else { hi=mid-1; }
+      }
+
+      if(best === 0){
+        if(!placedAny){ best = 1; } // caso patológico: força ao menos 1 palavra p/ evitar loop infinito
+        else break; // nada mais cabe nesta página — segue pra próxima com o parágrafo intacto
+      }
+
+      contentHtml += npWrapP(words.slice(0,best).join(' '));
+      placedAny = true;
+      const remainder = words.slice(best).join(' ');
+      if(remainder){
+        units[idx] = {type:'p', raw: remainder}; // resto do parágrafo continua na próxima página
+        break;
+      } else {
+        idx++;
+      }
+    }
+
+    pages.push({ html: wrapPageBody(headerHtml, contentHtml, isFirst) });
+    isFirst = false;
+  } while(idx < units.length);
+
+  return pages.map((p,i)=>{
+    const isLast = i===pages.length-1;
+    return `<div class="pdf-page" data-page="inner">${p.html}${isLast?footerHtml:''}</div>`;
   }).join('');
 }
 
@@ -1232,24 +1318,27 @@ function buildNewsPdfBody(){
 function renderNewsPdfPreview(){
   document.getElementById('newspdf-preview').innerHTML = buildNewsPdfBody();
   scheduleNewsPdfAutoSave();
+  if(newsPdfData.pages.some(pg => pg.title && pg.title.trim())){
+    syncPdfToNewsItemsCore();
+  }
 }
 
 /* --- exportar PDF / HTML --- */
 async function downloadNewsPdf(){
   if(typeof window.jspdf === 'undefined'){ showToast('jsPDF não carregou — verifique a conexão.'); return; }
   const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF({unit:'pt', format:'a4'});
+  const pdf = new jsPDF({unit:'pt', format:'a4', compress:true});
   const pageEls = document.querySelectorAll('#newspdf-preview .pdf-page');
   showToast('Gerando PDF, aguarde…');
   for(let i=0;i<pageEls.length;i++){
-    const canvas = await html2canvas(pageEls[i], {scale:2, useCORS:true, backgroundColor:'#ffffff'});
-    const imgData = canvas.toDataURL('image/png');
+    const canvas = await html2canvas(pageEls[i], {scale:1.5, useCORS:true, backgroundColor:'#ffffff'});
+    const imgData = canvas.toDataURL('image/jpeg', 0.82);
     const pageW = pdf.internal.pageSize.getWidth();
     const pageH = pdf.internal.pageSize.getHeight();
     const ratio = Math.min(pageW/canvas.width, pageH/canvas.height);
     const w = canvas.width*ratio, h = canvas.height*ratio;
     if(i>0) pdf.addPage();
-    pdf.addImage(imgData, 'PNG', (pageW-w)/2, 0, w, h);
+    pdf.addImage(imgData, 'JPEG', (pageW-w)/2, 0, w, h, undefined, 'MEDIUM');
   }
   const fname = 'icm_news_' + (newsPdfData.edition||'edicao').replace(/[^a-zA-Z0-9]+/g,'_').toLowerCase() + '.pdf';
   pdf.save(fname);
@@ -1325,9 +1414,8 @@ function plainTextFromBody(raw){
   return (raw||'').split('\n\n')[0].replace(/\*\*(.+?)\*\*/g,'$1').replace(/^-\s*/,'').replace(/\n/g,' ').trim();
 }
 
-function syncPdfToNewsItems(){
-  if(!newsPdfData.pages.length){ showToast('Não há páginas internas pra sincronizar.'); return; }
-  const link = document.getElementById('npPdfUrl').value.trim();
+function syncPdfToNewsItemsCore(){
+  const link = document.getElementById('npPdfUrl') ? document.getElementById('npPdfUrl').value.trim() : '';
   newsItems = newsPdfData.pages.map(pg => ({
     icon: pg.icon,
     color: pg.color,
@@ -1337,6 +1425,11 @@ function syncPdfToNewsItems(){
   }));
   renderItemsForm();
   renderNews();
+}
+
+function syncPdfToNewsItems(){
+  if(!newsPdfData.pages.length){ showToast('Não há páginas internas pra sincronizar.'); return; }
+  syncPdfToNewsItemsCore();
   showToast('Resumos do ICM News atualizados a partir das páginas do PDF!');
   document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
   document.querySelector('nav.tabs button[data-tab="news"]').classList.add('active');
@@ -1860,6 +1953,53 @@ function openNewsConfig(){
 function closeNewsConfig(){
   document.getElementById('cfg-overlay').style.display = 'none';
   document.getElementById('cfg-modal').style.display = 'none';
+}
+
+function downloadJsonBackup(data, filename){
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  showToast('Backup baixado!');
+}
+
+function pad2(n){ return String(n).padStart(2,'0'); }
+function backupFilename(prefix){
+  const d = new Date();
+  return `${prefix}_${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}_${pad2(d.getHours())}${pad2(d.getMinutes())}.json`;
+}
+
+function downloadNewsBackup(){
+  downloadJsonBackup(getNewsState(), backupFilename('backup_icm_news'));
+}
+function handleNewsBackupUpload(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try{
+      applyNewsState(JSON.parse(e.target.result));
+      showToast('Backup carregado!');
+    }catch(err){ showToast('Não consegui ler esse arquivo — confira se é o backup certo.'); console.error(err); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+function downloadNewsPdfBackup(){
+  downloadJsonBackup(newsPdfData, backupFilename('backup_icm_news_pdf'));
+}
+function handleNewsPdfBackupUpload(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try{
+      applyNewsPdfState(JSON.parse(e.target.result));
+      showToast('Backup carregado!');
+    }catch(err){ showToast('Não consegui ler esse arquivo — confira se é o backup certo.'); console.error(err); }
+  };
+  reader.readAsText(file);
+  input.value = '';
 }
 
 function saveNewsConfig(){
