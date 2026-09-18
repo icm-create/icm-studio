@@ -281,6 +281,16 @@
     font-size:13px;
   }
   .acao-remove:hover{background:#fbe0dc;}
+  .fmt-toolbar{
+    display:flex; gap:4px; margin:4px 0 0;
+  }
+  .fmt-btn{
+    border:1px solid #dfe6e6; background:#fff; border-radius:6px;
+    width:30px; height:28px; cursor:pointer; font-size:13px; color:var(--ink-soft);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .fmt-btn:hover{background:#eafafa; border-color:var(--teal);}
+  .fmt-btn.wide{width:auto; padding:0 10px;}
   .draft-status{
     font-size:11px;
     font-weight:600;
@@ -612,8 +622,12 @@ Reunimos os principais alinhamentos, atualizações e novidades que impactam nos
         <input type="text" id="infTitulo" oninput="onInfCommonInput('titulo',this.value)">
 
         <label>Mensagem</label>
+        <div class="fmt-toolbar">
+          <button type="button" class="fmt-btn" style="font-weight:800;" title="Negrito" onclick="fmtWrapSelection('infMsg','**','**')">B</button>
+          <button type="button" class="fmt-btn wide" title="Lista com marcadores" onclick="fmtPrefixLines('infMsg','- ')">• Lista</button>
+        </div>
         <textarea id="infMsg" oninput="onInfCommonInput('mensagem',this.value)"></textarea>
-        <div class="hint">Use <code>**negrito**</code> para destaque. Parágrafo novo = linha em branco. Linha com <code>-</code> vira item de lista.</div>
+        <div class="hint">Ou, se preferir digitar direto: <code>**negrito**</code> para destaque, parágrafo novo = linha em branco, linha com <code>-</code> vira item de lista.</div>
 
         <div id="infExtraFields"></div>
 
@@ -807,6 +821,37 @@ function renderItemsForm(){
 }
 
 function escapeAttr(s){ return (s||'').replace(/"/g,'&quot;'); }
+
+/* ---------- barra de formatação (negrito / lista) para as textareas ---------- */
+function fmtWrapSelection(textareaId, before, after){
+  const ta = document.getElementById(textareaId);
+  if(!ta) return;
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const selected = ta.value.slice(start, end) || 'texto';
+  ta.value = ta.value.slice(0,start) + before + selected + after + ta.value.slice(end);
+  ta.focus();
+  ta.selectionStart = start + before.length;
+  ta.selectionEnd = start + before.length + selected.length;
+  ta.dispatchEvent(new Event('input'));
+}
+function fmtPrefixLines(textareaId, prefix){
+  const ta = document.getElementById(textareaId);
+  if(!ta) return;
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const selected = ta.value.slice(start, end) || 'item da lista';
+  const prefixed = selected.split('\n').map(l => l.startsWith(prefix) ? l : prefix+l).join('\n');
+  ta.value = ta.value.slice(0,start) + prefixed + ta.value.slice(end);
+  ta.focus();
+  ta.selectionStart = start;
+  ta.selectionEnd = start + prefixed.length;
+  ta.dispatchEvent(new Event('input'));
+}
+function fmtToolbarHtml(textareaId){
+  return `<div class="fmt-toolbar">
+    <button type="button" class="fmt-btn" style="font-weight:800;" title="Negrito" onclick="fmtWrapSelection('${textareaId}','**','**')">B</button>
+    <button type="button" class="fmt-btn wide" title="Lista com marcadores" onclick="fmtPrefixLines('${textareaId}','- ')">• Lista</button>
+  </div>`;
+}
 function escapeHtml(s){
   return (s||'')
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -1080,8 +1125,12 @@ function renderNpPages(){
         ${NEWS_COLORS.map(c=>`<button type="button" class="color-btn${c===pg.color?' active':''}" style="background:${c}" onclick="newsPdfData.pages[${pi}].color='${c}';renderNpPages();renderNewsPdfPreview()"></button>`).join('')}
       </div>
       <label>Corpo do texto</label>
-      <textarea oninput="newsPdfData.pages[${pi}].body=this.value;renderNewsPdfPreview()">${pg.body}</textarea>
-      <div class="hint">Use <code>**negrito**</code>, linha em branco = parágrafo novo, linha com <code>-</code> = lista.</div>
+      <div class="fmt-toolbar">
+        <button type="button" class="fmt-btn" style="font-weight:800;" title="Negrito" onclick="fmtWrapSelection('npBody${pi}','**','**')">B</button>
+        <button type="button" class="fmt-btn wide" title="Lista com marcadores" onclick="fmtPrefixLines('npBody${pi}','- ')">• Lista</button>
+      </div>
+      <textarea id="npBody${pi}" oninput="newsPdfData.pages[${pi}].body=this.value;renderNewsPdfPreview()">${pg.body}</textarea>
+      <div class="hint">Ou digite direto: <code>**negrito**</code>, linha em branco = parágrafo novo, linha com <code>-</code> = lista.</div>
       <label>Imagem da página (opcional)</label>
       <input type="file" accept="image/*" onchange="handleNpPageImg(${pi}, this)">
       <div class="pos-picker">
