@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ICM News & ICM Informa — v2 (protótipo)</title>
+<title>Mercado e Cliente News & Mercado e Cliente Informa — v2 (protótipo)</title>
 <style>
   :root{
     --ink:#132330;
@@ -248,6 +248,7 @@
     border-radius:4px;
     background:#ddd;
   }
+  #bannerThumb, #bannerThumbInforma{ object-fit:contain; background:transparent; }
   .cover-preview .meta{font-size:12px; color:var(--ink-soft); flex:1;}
   .icon-grid, .color-grid{display:flex; flex-wrap:wrap; gap:6px; margin-top:4px;}
   .icon-btn{
@@ -375,8 +376,8 @@
     gap:6px;
   }
   .type-chip.active{
-    border-color:currentColor;
-    background:currentColor;
+    border-color:var(--tc);
+    background:var(--tc);
     color:#fff !important;
   }
   .type-chip.active .lbl{color:#fff;}
@@ -420,18 +421,18 @@
       <line x1="7" y1="8" x2="14" y2="5" stroke="#2cbfad" stroke-width=".8"/>
       <line x1="67" y1="6" x2="73" y2="8" stroke="#2cbfad" stroke-width=".8"/>
     </svg>
-    <span>Studio</span>
+    <span>Mercado e Cliente Studio</span>
   </div>
 </header>
 
 <nav class="tabs">
-  <button class="active" data-tab="news">ICM News</button>
-  <button data-tab="newspdf">ICM News (PDF)</button>
-  <button data-tab="informa">ICM Informa</button>
+  <button class="active" data-tab="news">Mercado e Cliente News</button>
+  <button data-tab="newspdf">Mercado e Cliente News (PDF)</button>
+  <button data-tab="informa">Mercado e Cliente Informa</button>
   <button data-tab="aniversario">Aniversário</button>
 </nav>
 
-<!-- ======================= ICM NEWS ======================= -->
+<!-- ======================= MERCADO E CLIENTE NEWS ======================= -->
 <main class="active" id="tab-news">
   <div class="section-note">
     Preencha a edição e as notícias à esquerda. À direita você tem duas saídas: o <strong>HTML pronto para colar no Gmail</strong> e o <strong>texto para postar no chat</strong> (com a capa para anexar separadamente).
@@ -447,7 +448,7 @@
           <button class="btn ghost" onclick="openNewsConfig()">⚙️ Configurar</button>
           <span class="draft-status" id="news-draft-status"></span>
         </div>
-        <div class="hint">Salva sozinho a cada poucos segundos numa planilha do Google (mesma lógica do ICM Studio v1), assim como o rascunho não se perde se a aba fechar. Configure a URL do Apps Script uma vez em "Configurar".</div>
+        <div class="hint">Salva sozinho a cada poucos segundos numa planilha do Google (mesma lógica do Mercado e Cliente Studio v1), assim como o rascunho não se perde se a aba fechar. Configure a URL do Apps Script uma vez em "Configurar".</div>
         <div class="row-actions" style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px;">
           <button class="btn solid" onclick="downloadNewsBackup()">⬇️ Baixar backup (arquivo)</button>
           <label class="btn ghost" style="cursor:pointer;margin:0;">📂 Carregar backup (arquivo)
@@ -463,17 +464,17 @@
         <input type="text" id="edition" value="EDIÇÃO MENSAL | AGOSTO 2026" oninput="renderNews()">
 
         <label>URL do banner do cabeçalho (para o e-mail)</label>
-        <input type="text" id="bannerUrl" value="assets/banner_icm_news.png" oninput="renderNews()">
-        <div class="hint">Suba o arquivo <code>banner_icm_news.png</code> (gerado junto com esta ferramenta) no GitHub Pages / portal ICM e cole aqui a URL pública. Enquanto isso, o caminho relativo já mostra a prévia certinha.</div>
+        <input type="text" id="bannerUrl" value="assets/banner_mercado_cliente_news.png" oninput="renderNews()">
+        <div class="hint">Suba o arquivo <code>banner_mercado_cliente_news.png</code> (gerado junto com esta ferramenta) no GitHub Pages / portal ICM e cole aqui a URL pública. Enquanto isso, o caminho relativo já mostra a prévia certinha.</div>
         <div class="cover-preview">
-          <img id="bannerThumb" src="assets/banner_icm_news.png" onerror="this.style.opacity=0.15">
+          <img id="bannerThumb" src="assets/banner_mercado_cliente_news.png" onerror="this.style.opacity=0.15">
           <div class="meta">Este banner vai <strong>dentro do HTML do e-mail</strong> (cabeçalho). Não precisa ser anexado no chat.</div>
         </div>
 
         <label>Imagem quadrada para o chat (genérica, sempre a mesma)</label>
         <div class="cover-preview">
-          <img src="assets/square_icm_news.png" onerror="this.style.opacity=0.15">
-          <div class="meta"><code>square_icm_news.png</code> — mesma identidade do banner, em formato quadrado. Anexe este arquivo junto sempre que postar o texto da ICM News no chat.</div>
+          <img src="assets/square_mercado_cliente_news.png" onerror="this.style.opacity=0.15">
+          <div class="meta"><code>square_mercado_cliente_news.png</code> — mesma identidade do banner, em formato quadrado. Anexe este arquivo junto sempre que postar o texto da Mercado e Cliente News no chat.</div>
         </div>
       </div>
 
@@ -502,37 +503,37 @@
       <div class="card">
         <h2>Texto para postar no chat</h2>
         <label class="first">Frase de abertura</label>
-        <input type="text" id="chatIntro" value="📰 Saiu a nova edição da ICM News!" oninput="renderNews()">
+        <input type="text" id="chatIntro" value="📰 Saiu a nova edição da Mercado e Cliente News!" oninput="renderNews()">
         <div class="divider-label">Prévia (título em negrito e maior, como vai ficar ao colar)</div>
         <div class="chattext" id="chatPreviewNews"></div>
         <div class="row-actions">
           <button class="btn solid" onclick="copyRichFromElement('chatPreviewNews','Copiado! Cole no chat (Ctrl+V) — título já sai em negrito e maior.')">📋 Copiar formatado</button>
           <button class="btn ghost" onclick="copyText('chatPreviewNews', buildChatTextNews())">📄 Copiar texto simples</button>
-          <button class="btn ghost" onclick="window.open('assets/square_icm_news.png','_blank')">🖼️ Abrir imagem quadrada (p/ anexar)</button>
+          <button class="btn ghost" onclick="window.open('assets/square_mercado_cliente_news.png','_blank')">🖼️ Abrir imagem quadrada (p/ anexar)</button>
         </div>
       </div>
 
       <div class="card">
         <h2>Texto para postar no WhatsApp</h2>
         <label class="first">Frase de abertura</label>
-        <textarea id="whatsIntro" oninput="renderNews()">A edição de Agosto do ICM News já está disponível! 📢
+        <textarea id="whatsIntro" oninput="renderNews()">A edição de Agosto do Mercado e Cliente News já está disponível! 📢
 Reunimos os principais alinhamentos, atualizações e novidades que impactam nossa rotina comercial.</textarea>
         <div class="hint">No WhatsApp só entram os títulos e os links (sem o resumo) — mais direto para leitura no celular.</div>
         <div class="divider-label">Prévia</div>
         <pre class="chattext" id="chatPreviewWhats"></pre>
         <div class="row-actions">
           <button class="btn solid" onclick="copyText('chatPreviewWhats')">📋 Copiar texto</button>
-          <button class="btn ghost" onclick="window.open('assets/square_icm_news.png','_blank')">🖼️ Abrir imagem quadrada (p/ anexar)</button>
+          <button class="btn ghost" onclick="window.open('assets/square_mercado_cliente_news.png','_blank')">🖼️ Abrir imagem quadrada (p/ anexar)</button>
         </div>
       </div>
     </div>
   </div>
 </main>
 
-<!-- ======================= ICM NEWS (PDF) ======================= -->
+<!-- ======================= MERCADO E CLIENTE NEWS (PDF) ======================= -->
 <main id="tab-newspdf">
   <div class="section-note">
-    Modelo de transição: monta a edição completa (capa + seções + páginas internas), no layout novo, para exportar em PDF. Enquanto não existe uma página web por notícia, use o link do PDF no lugar do link da notícia na aba ICM News.
+    Modelo de transição: monta a edição completa (capa + seções + páginas internas), no layout novo, para exportar em PDF. Enquanto não existe uma página web por notícia, use o link do PDF no lugar do link da notícia na aba Mercado e Cliente News.
   </div>
   <div class="grid">
     <!-- FORM -->
@@ -545,7 +546,7 @@ Reunimos os principais alinhamentos, atualizações e novidades que impactam nos
           <button class="btn ghost" onclick="openNewsConfig()">⚙️ Configurar</button>
           <span class="draft-status" id="newspdf-draft-status"></span>
         </div>
-        <div class="hint">Usa a mesma URL do Apps Script configurada no ICM News (é a mesma planilha, numa aba separada).</div>
+        <div class="hint">Usa a mesma URL do Apps Script configurada no Mercado e Cliente News (é a mesma planilha, numa aba separada).</div>
         <div class="hint">⚠️ As imagens das páginas <strong>não</strong> entram no backup (o Google Sheets tem limite de tamanho por célula) — só o texto é salvo. Reanexe as imagens depois de carregar um rascunho.</div>
         <div class="row-actions" style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px;">
           <button class="btn solid" onclick="downloadNewsPdfBackup()">⬇️ Baixar backup (arquivo)</button>
@@ -561,7 +562,7 @@ Reunimos os principais alinhamentos, atualizações e novidades que impactam nos
         <label class="first">Texto da edição</label>
         <input type="text" id="npEdition" value="EDIÇÃO MENSAL | AGOSTO 2026" oninput="onNpCommonInput('edition',this.value)">
         <label>URL do banner do cabeçalho</label>
-        <input type="text" id="npBanner" value="assets/banner_icm_news.png" oninput="onNpCommonInput('bannerUrl',this.value)">
+        <input type="text" id="npBanner" value="assets/banner_mercado_cliente_news.png" oninput="onNpCommonInput('bannerUrl',this.value)">
       </div>
 
       <div class="card">
@@ -577,15 +578,15 @@ Reunimos os principais alinhamentos, atualizações e novidades que impactam nos
       </div>
 
       <div class="card">
-        <h2>Sincronizar com o ICM News</h2>
-        <div class="hint">✅ Automático: assim que você preenche o título de uma página aqui, os resumos da aba ICM News (e-mail/chat/WhatsApp) já são atualizados sozinhos a partir das páginas internas — não precisa fazer nada.</div>
+        <h2>Sincronizar com o Mercado e Cliente News</h2>
+        <div class="hint">✅ Automático: assim que você preenche o título de uma página aqui, os resumos da aba Mercado e Cliente News (e-mail/chat/WhatsApp) já são atualizados sozinhos a partir das páginas internas — não precisa fazer nada.</div>
         <label class="first">Link do PDF publicado (opcional)</label>
         <input type="text" id="npPdfUrl" placeholder="https://..." oninput="renderNewsPdfPreview()">
         <div class="hint">Enquanto não existir uma página web por notícia, esse link é usado em todas as notícias geradas — aponta pro PDF inteiro.</div>
         <div class="row-actions">
-          <button class="btn ghost" onclick="syncPdfToNewsItems()">🔄 Ver agora na aba ICM News</button>
+          <button class="btn ghost" onclick="syncPdfToNewsItems()">🔄 Ver agora na aba Mercado e Cliente News</button>
         </div>
-        <div class="hint" style="margin-top:8px;">Esse botão é só um atalho pra já abrir na aba ICM News e conferir — a sincronização em si já aconteceu sozinha.</div>
+        <div class="hint" style="margin-top:8px;">Esse botão é só um atalho pra já abrir na aba Mercado e Cliente News e conferir — a sincronização em si já aconteceu sozinha.</div>
       </div>
     </div>
 
@@ -604,7 +605,7 @@ Reunimos os principais alinhamentos, atualizações e novidades que impactam nos
   </div>
 </main>
 
-<!-- ======================= ICM INFORMA ======================= -->
+<!-- ======================= MERCADO E CLIENTE INFORMA ======================= -->
 <main id="tab-informa">
   <div class="section-note">
     O tipo de comunicado abre os campos específicos dele (datas, janelas, sistema afetado etc.) — isso vale pro gerenciador. No <strong>e-mail</strong> o tipo aparece como uma faixa colorida; no <strong>texto do chat</strong> ele não aparece em texto — em vez disso, anexe a imagem genérica do tema junto com o post.
@@ -638,17 +639,17 @@ Reunimos os principais alinhamentos, atualizações e novidades que impactam nos
       <div class="card">
         <h2>Banner do cabeçalho (para o e-mail)</h2>
         <label class="first">URL do banner</label>
-        <input type="text" id="bannerUrlInforma" value="assets/banner_icm_informa.png" oninput="renderInforma()">
-        <div class="hint">Mesma lógica do ICM News: suba <code>banner_icm_informa.png</code> onde for hospedar e cole a URL pública aqui.</div>
+        <input type="text" id="bannerUrlInforma" value="assets/banner_mercado_cliente_informa.png" oninput="renderInforma()">
+        <div class="hint">Mesma lógica do Mercado e Cliente News: suba <code>banner_mercado_cliente_informa.png</code> onde for hospedar e cole a URL pública aqui.</div>
         <div class="cover-preview">
-          <img id="bannerThumbInforma" src="assets/banner_icm_informa.png" onerror="this.style.opacity=0.15">
+          <img id="bannerThumbInforma" src="assets/banner_mercado_cliente_informa.png" onerror="this.style.opacity=0.15">
           <div class="meta">Vai no topo do e-mail. A faixa colorida do tipo entra logo abaixo dele, dentro do HTML.</div>
         </div>
 
         <label>Imagem quadrada genérica (para o chat)</label>
         <div class="cover-preview">
-          <img src="assets/square_icm_informa.png" onerror="this.style.opacity=0.15">
-          <div class="meta"><code>square_icm_informa.png</code> — use quando o comunicado não tiver um tema específico com ícone próprio (seção de temas acima).</div>
+          <img src="assets/square_mercado_cliente_informa.png" onerror="this.style.opacity=0.15">
+          <div class="meta"><code>square_mercado_cliente_informa.png</code> — use quando o comunicado não tiver um tema específico com ícone próprio (seção de temas acima).</div>
         </div>
       </div>
     </div>
@@ -659,7 +660,9 @@ Reunimos os principais alinhamentos, atualizações e novidades que impactam nos
         <div class="preview-wrap"><div id="emailPreviewInforma"></div></div>
         <div class="row-actions">
           <button class="btn solid" onclick="copyRichFromElement('emailPreviewInforma','HTML copiado! Cole no corpo do e-mail no Gmail.')">📋 Copiar HTML para colar no Gmail</button>
+          <button class="btn ghost" onclick="downloadInformaCardImg()">🖼️ Baixar como imagem (PNG)</button>
         </div>
+        <div class="hint" style="margin-top:10px;">Gera uma imagem única do card (banner + faixa do tipo + texto + rodapé), igual ao card do Mercado e Cliente Informa v1 — útil para postar como imagem em vez de colar o HTML.</div>
       </div>
 
       <div class="card">
@@ -691,7 +694,7 @@ Reunimos os principais alinhamentos, atualizações e novidades que impactam nos
 <!-- ======================= ANIVERSÁRIO ======================= -->
 <main id="tab-aniversario">
   <div class="section-note">
-    Réplica fiel do card de Aniversário do ICM Studio v1 — mesmo layout, texto fixo de parabenização, assinatura e logo reais. Só os dados do aniversariante e do diretor são editáveis.
+    Réplica fiel do card de Aniversário do Mercado e Cliente Studio v1 — mesmo layout, texto fixo de parabenização, assinatura e logo reais. Só os dados do aniversariante e do diretor são editáveis.
   </div>
   <div class="grid">
     <div>
@@ -731,10 +734,10 @@ de Mercado e Cliente</textarea>
 
 <div class="cfg-overlay" id="cfg-overlay" onclick="closeNewsConfig()"></div>
 <div class="cfg-modal" id="cfg-modal">
-  <h3>Configurações do rascunho (ICM News)</h3>
+  <h3>Configurações do rascunho (Mercado e Cliente News)</h3>
   <label class="first">URL do Google Apps Script</label>
   <input type="text" id="cfg-url" placeholder="https://script.google.com/macros/s/.../exec">
-  <div class="hint">Cole aqui a URL gerada ao publicar o Apps Script (veja o arquivo <code>apps_script_icm_news_backup.gs.txt</code> que acompanha esta ferramenta).</div>
+  <div class="hint">Cole aqui a URL gerada ao publicar o Apps Script (veja o arquivo <code>apps_script_mercado_cliente_news_backup.gs.txt</code> que acompanha esta ferramenta).</div>
   <label>Auto-save (segundos após última alteração)</label>
   <input type="text" id="cfg-interval" value="5">
   <div class="cfg-status" id="cfg-url-status"></div>
@@ -764,7 +767,7 @@ function showToast(msg){
   setTimeout(()=>t.classList.remove('show'),2600);
 }
 
-/* ---------- ICM NEWS ---------- */
+/* ---------- MERCADO E CLIENTE NEWS ---------- */
 const NEWS_ICONS=['📊','🚀','🏆','🔔','💡','🤝','🛠️','📅','🎯','🎉','⚙️','📈'];
 const NEWS_COLORS=['#1a8f7f','#1f6fb2','#2e8b5a','#c98a12','#d8483f','#6a4fb0','#6b7680'];
 
@@ -881,7 +884,7 @@ function buildEmailHtml(){
     <tr><td align="center" style="padding:24px 12px;">
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;max-width:600px;">
         <tr><td>
-          <img src="${banner}" width="600" style="display:block;width:100%;max-width:600px;height:auto;" alt="ICM News" />
+          <img src="${banner}" width="600" style="display:block;width:100%;max-width:600px;height:auto;" alt="Mercado e Cliente News" />
         </td></tr>
         <tr><td style="padding:10px 24px;border-bottom:1px solid #e5e5e5;" align="right">
           <span style="font-family:Arial,Helvetica,sans-serif;color:#1a8f7f;font-size:12px;font-weight:bold;">${escapeHtml(edition)}</span>
@@ -980,10 +983,10 @@ function copyText(elId, textOverride){
   });
 }
 
-/* ---------- ICM NEWS (PDF) — capa + seções + páginas internas ---------- */
+/* ---------- MERCADO E CLIENTE NEWS (PDF) — capa + seções + páginas internas ---------- */
 let newsPdfData = {
   edition: 'EDIÇÃO MENSAL | AGOSTO 2026',
-  bannerUrl: 'assets/banner_icm_news.png',
+  bannerUrl: 'assets/banner_mercado_cliente_news.png',
   sections: [
     { name:'Processos & Áreas', icon:'⚙️', color:'#0e8a8a', items:[ {title:'', desc:''} ] },
   ],
@@ -1389,7 +1392,7 @@ async function downloadNewsPdf(){
     if(i>0) pdf.addPage();
     pdf.addImage(imgData, 'JPEG', (pageW-w)/2, 0, w, h, undefined, 'MEDIUM');
   }
-  const fname = 'icm_news_' + (newsPdfData.edition||'edicao').replace(/[^a-zA-Z0-9]+/g,'_').toLowerCase() + '.pdf';
+  const fname = 'mercado_cliente_news_' + (newsPdfData.edition||'edicao').replace(/[^a-zA-Z0-9]+/g,'_').toLowerCase() + '.pdf';
   pdf.save(fname);
 }
 
@@ -1399,11 +1402,11 @@ function downloadNewsPdfHtml(){
   const blob = new Blob([full], {type:'text/html'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'icm_news_completo.html';
+  a.download = 'mercado_cliente_news_completo.html';
   a.click();
 }
 
-/* --- rascunho (mesma URL do ICM News, chave separada) --- */
+/* --- rascunho (mesma URL do Mercado e Cliente News, chave separada) --- */
 let _newsPdfDraftTimer = null;
 
 function getNewsPdfState(){
@@ -1479,14 +1482,14 @@ function syncPdfToNewsItemsCore(){
 function syncPdfToNewsItems(){
   if(!newsPdfData.pages.length){ showToast('Não há páginas internas pra sincronizar.'); return; }
   syncPdfToNewsItemsCore();
-  showToast('Resumos do ICM News atualizados a partir das páginas do PDF!');
+  showToast('Resumos do Mercado e Cliente News atualizados a partir das páginas do PDF!');
   document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
   document.querySelector('nav.tabs button[data-tab="news"]').classList.add('active');
   document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
   document.getElementById('tab-news').classList.add('active');
 }
 
-/* ---------- ICM INFORMA ---------- */
+/* ---------- MERCADO E CLIENTE INFORMA ---------- */
 const informaTypes=[
   {key:'alerta', icon:'🔴', label:'Alerta de instabilidade', color:'#d8483f', img:'assets/tema_alerta.png',
     fields:[
@@ -1577,6 +1580,7 @@ function renderTypePicker(){
     const chip=document.createElement('div');
     chip.className='type-chip'+(t.key===selectedType?' active':'');
     chip.style.color=t.color;
+    chip.style.setProperty('--tc', t.color);
     chip.innerHTML=`<span>${t.icon}</span><span class="lbl">${t.label}</span>`;
     chip.onclick=()=>{ selectedType=t.key; renderTypePicker(); syncInfFormFromState(); renderInforma(); };
     wrap.appendChild(chip);
@@ -1775,7 +1779,7 @@ function buildEmailHtmlInforma(){
     <tr><td align="center" style="padding:24px 12px;">
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;max-width:600px;">
         <tr><td>
-          <img src="${banner}" width="600" style="display:block;width:100%;max-width:600px;height:auto;" alt="ICM Informa" />
+          <img src="${banner}" width="600" style="display:block;width:100%;max-width:600px;height:auto;" alt="Mercado e Cliente Informa" />
         </td></tr>
         <tr><td style="background:${type.color};padding:10px 24px;">
           <span style="font-family:Arial,Helvetica,sans-serif;color:#ffffff;font-size:13px;font-weight:bold;letter-spacing:.03em;">${type.icon} ${escapeHtml(type.label.toUpperCase())}</span>
@@ -1901,7 +1905,27 @@ function downloadAnivCard(){
   });
 }
 
-/* ---------- RASCUNHO — GOOGLE SHEETS (ICM News) ---------- */
+function downloadInformaCardImg(){
+  if (typeof html2canvas === 'undefined'){ showToast('html2canvas não carregou — verifique a conexão.'); return; }
+  const inner = document.querySelector('#emailPreviewInforma table table');
+  if (!inner){ showToast('Gere a prévia do e-mail antes de baixar a imagem.'); return; }
+  html2canvas(inner, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 600 }).then(canvas => {
+    const type = currentType();
+    const v = currentValues();
+    const base = (v.titulo || type.label || 'informa').toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+    const a = document.createElement('a');
+    a.download = 'mercado_cliente_informa_' + (type.key||'tipo') + '_' + (base||'comunicado') + '.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  }).catch(err=>{
+    console.error(err);
+    showToast('Erro ao gerar imagem.');
+  });
+}
+
+/* ---------- RASCUNHO — GOOGLE SHEETS (Mercado e Cliente News) ---------- */
 let _newsDraftTimer = null;
 let _newsAutoSaveInterval = parseInt(localStorage.getItem('icmnewsv2_autosave_interval') || '5', 10) * 1000;
 
@@ -2020,7 +2044,7 @@ function backupFilename(prefix){
 }
 
 function downloadNewsBackup(){
-  downloadJsonBackup(getNewsState(), backupFilename('backup_icm_news'));
+  downloadJsonBackup(getNewsState(), backupFilename('backup_mercado_cliente_news'));
 }
 function handleNewsBackupUpload(input){
   const file = input.files[0]; if(!file) return;
@@ -2036,7 +2060,7 @@ function handleNewsBackupUpload(input){
 }
 
 function downloadNewsPdfBackup(){
-  downloadJsonBackup(newsPdfData, backupFilename('backup_icm_news_pdf'));
+  downloadJsonBackup(newsPdfData, backupFilename('backup_mercado_cliente_news_pdf'));
 }
 function handleNewsPdfBackupUpload(input){
   const file = input.files[0]; if(!file) return;
